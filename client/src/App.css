@@ -1,0 +1,76 @@
+/* client/src/App.css */
+
+.App {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #0080ff;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.landing-container {
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.login-form label {
+  margin: 0.5rem 0 0.2rem;
+}
+
+.login-form input {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-form button {
+  background-color: #0080ff;
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.login-form button:hover {
+  background-color: #005bb5;
+}
+
+.register-button button {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.register-button button:hover {
+  background-color: #1f7a33;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #eee;
+}
