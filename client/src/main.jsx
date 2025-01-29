@@ -1,11 +1,11 @@
-// client/src/main.jsx
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
+// client/src/index.jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css'; // global CSS if you have it
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
+  </React.StrictMode>
 );

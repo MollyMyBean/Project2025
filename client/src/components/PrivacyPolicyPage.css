@@ -1,0 +1,133 @@
+/* PrivacyPolicy.css */
+
+/* Container that allows scrolling and a simple top header */
+.pp-container {
+    width: 100%;
+    height: 100vh;         /* Full viewport height */
+    overflow-y: auto;      /* Enable vertical scrolling if content is long */
+    background: #f7f9fa;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  
+  /* Simple header with two links */
+  .pp-header {
+    display: flex;
+    justify-content: flex-end;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    padding: 0.8rem 1rem;
+  }
+  
+  .header-link {
+    margin-left: 1rem;
+    color: #00adef;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .header-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* Main content area */
+  .pp-content {
+    max-width: 800px;
+    width: 100%;
+    margin: 1rem auto;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: #333;
+    line-height: 1.6;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* Title & Date */
+  .pp-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #00adef; /* match your bright blue theme */
+  }
+  
+  .pp-updated-date {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Section Headings */
+  .pp-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .pp-section h2 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  
+  /* Paragraphs and Links */
+  .pp-section p {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 0.8rem;
+  }
+  
+  .pp-section a {
+    color: #00adef;
+    text-decoration: none;
+    margin-left: 4px;
+  }
+  
+  .pp-section a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Footer link => "Back to Home" button */
+  .pp-footer-link {
+    text-align: right;
+    margin-top: 2rem;
+  }
+  
+  .pp-home-link {
+    text-decoration: none;
+    color: #00adef;
+    font-weight: 600;
+    border: 1px solid #00adef;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+  
+  .pp-home-link:hover {
+    background-color: #00adef;
+    color: #fff;
+  }
+  
+  /* Responsive tweaks */
+  @media (max-width: 768px) {
+    .pp-content {
+      padding: 1.2rem;
+      margin: 1rem;
+    }
+  
+    .pp-title {
+      font-size: 1.6rem;
+    }
+  
+    .pp-section h2 {
+      font-size: 1.1rem;
+    }
+  
+    .pp-section p {
+      font-size: 0.9rem;
+    }
+  }
+  

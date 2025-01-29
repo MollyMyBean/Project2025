@@ -1,38 +1,298 @@
+/* styles.css or your global root styles */
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Dark-mode overrides */
+.dark-mode {
+  background-color: #1a1a1a;
+  color: #f5f5f5;
+}
+
+.dark-mode a {
+  color: #bbb;
+}
+
+.dark-mode button,
+.dark-mode .btn-save,
+.dark-mode .logout-btn {
+  background-color: #4a90e2;    /* same brand color or a new one */
+  color: #fff;
+  border-color: transparent;
+}
+
+body.dark-mode .top-bar {
+  background: #333 !important; 
+  border-bottom: 1px solid #555 !important;
+}
+
+body.dark-mode .notifications-panel,
+body.dark-mode .direct-message-panel {
+  background-color: #2b2b2b !important;
+  border-color: #444 !important;
+  color: #f0f0f0 !important;
+}
+
+
+
+.dark-mode button:hover,
+.dark-mode .btn-save:hover,
+.dark-mode .logout-btn:hover {
+  background-color: #3c7ec2; 
+}
+
+body.dark-mode .suggested-bar .suggested-heading {
+  color: #fff !important;
+  background-color: #333 !important; /* optional, if you want a darker top bar */
+  border-bottom: 1px solid #444 !important;
+}
+
+/* If you haven't already, ensure the body has "dark-mode" class when toggled. */
+/* Then add these rules at or near the bottom of index.css: */
+
+/* 1) Darken the main conversation column background */
+body.dark-mode .messages-page .conversation-column {
+  background-color: #2b2b2b !important; /* a dark gray */
+  color: #eee !important;
+}
+
+/* 2) The area where messages themselves appear */
+body.dark-mode .messages-page .conversation-column .message-display {
+  background-color: #2b2b2b !important; /* same or slightly darker */
+  color: #eee !important;
+}
+
+/* 3) Bubbles: differentiate “me” vs. “them” in dark mode */
+body.dark-mode .messages-page .bubble.me {
+  background-color: #4a90e2 !important; /* or keep brand color for your own msgs */
+  color: #fff !important;
+}
+body.dark-mode .messages-page .bubble.me .bubble-time {
+  color: rgba(255,255,255,0.7) !important;
+}
+
+body.dark-mode .messages-page .bubble.them {
+  background-color: #444 !important; 
+  color: #fff !important;
+}
+body.dark-mode .messages-page .bubble.them .bubble-time {
+  color: rgba(255,255,255,0.7) !important;
+}
+
+/* 4) If you want “media” bubbles (images/videos) to have a minimal or no background: */
+body.dark-mode .messages-page .bubble.media-bubble {
+  background: none !important;
+  border: none !important;
+}
+
+/* That’s it! 
+   Now your conversation area and chat bubbles are no longer bright white in dark mode. */
+/* Dark-mode overrides for MyProfilePage */
+body.dark-mode .my-profile-page {
+  background-color: #2b2b2b !important; /* page background */
+  color: #eee !important;
+}
+
+/* The main column/card area */
+body.dark-mode .my-profile-page .profile-main-column {
+  background-color: #2b2b2b !important;
+  border-color: #444 !important;
+  color: #eee !important;
+}
+
+/* The top bar in the profile page (with "My Profile" title) */
+body.dark-mode .my-profile-page .top-bar {
+  background: #333 !important;
+  border-bottom: 1px solid #555 !important;
+}
+body.dark-mode .my-profile-page .profile-page-title {
+  color: #fff !important;
+}
+
+/* Each “section” block: Profile Picture, Profile Info, Upload Media, etc. */
+body.dark-mode .my-profile-page .profile-pic-section,
+body.dark-mode .my-profile-page .info-fields-section,
+body.dark-mode .my-profile-page .upload-media-section,
+body.dark-mode .my-profile-page .my-uploads-list,
+body.dark-mode .my-profile-page .bundles-section {
+  background-color: #333 !important;
+  border-color: #555 !important;
+  color: #eee !important;
+}
+
+/* The tab buttons (“Edit Profile” / “Profile Preview”) */
+body.dark-mode .my-profile-page .profile-tabs .tab-btn {
+  background-color: #444 !important;
+  color: #ddd !important;
+  border: 1px solid #555 !important;
+}
+body.dark-mode .my-profile-page .profile-tabs .tab-btn.active {
+  background-color: #4a90e2 !important; /* brand color highlight */
+  color: #fff !important;
+  border-color: #4a90e2 !important;
+}
+
+/* Form labels & fields => dark backgrounds, lighter text */
+body.dark-mode .my-profile-page .form-group label {
+  color: #ccc !important;
+}
+body.dark-mode .my-profile-page .form-group input,
+body.dark-mode .my-profile-page .form-group textarea {
+  background-color: #444 !important;
+  border: 1px solid #666 !important;
+  color: #f0f0f0 !important;
+}
+body.dark-mode .my-profile-page .form-group input::placeholder,
+body.dark-mode .my-profile-page .form-group textarea::placeholder {
+  color: #aaa !important;
+}
+
+/* Buttons => unify them in dark mode */
+body.dark-mode .my-profile-page button {
+  background-color: #4a90e2 !important;
+  color: #fff !important;
+  border: none !important;
+}
+body.dark-mode .my-profile-page button:hover {
+  background-color: #3c7ec2 !important;
+}
+/* Dark-mode for MyProfilePage "preview" tab */
+body.dark-mode .my-profile-page .preview-tab-content {
+  background-color: #2b2b2b !important;
+  color: #eee !important;
+}
+
+body.dark-mode .my-profile-page .preview-tab-content .preview-section,
+body.dark-mode .my-profile-page .preview-tab-content .preview-gallery {
+  background-color: #333 !important;
+  border: 1px solid #555 !important;
+  color: #eee !important;
+}
+
+/* Inside each preview “card” => override text, headings, images if needed */
+body.dark-mode .my-profile-page .preview-tab-content .preview-username {
+  color: #4a90e2 !important; /* or #fff if you want white */
+}
+
+body.dark-mode .my-profile-page .preview-tab-content .preview-bio {
+  color: #ccc !important;
+}
+
+body.dark-mode .my-profile-page .preview-tab-content .preview-interests,
+body.dark-mode .my-profile-page .preview-tab-content .preview-achievements {
+  color: #bbb !important;
+}
+
+/* The “Your Uploaded Media” heading or container */
+body.dark-mode .my-profile-page .preview-gallery .gallery-title {
+  color: #ddd !important;
+}
+
+/* Each uploaded item => dark background, lighter text */
+body.dark-mode .my-profile-page .preview-upload-card {
+  background-color: #444 !important;
+  border: 1px solid #555 !important;
+  color: #eee !important;
+}
+body.dark-mode .my-profile-page .preview-upload-card:hover {
+  background-color: #555 !important;
+}
+body.dark-mode .my-profile-page .preview-upload-card .preview-upload-title {
+  color: #f0f0f0 !important;
+}
+/* If <body> has .dark-mode => make the suggested card + inner also dark */
+body.dark-mode .suggested-bar .suggested-list .suggested-card {
+  background-color: #333 !important;
+  border: 1px solid #444 !important;
+  box-shadow: none !important; /* remove any bright drop shadow */
+}
+
+body.dark-mode .suggested-bar .suggested-list .suggested-card .card-inner {
+  background-color: #333 !important; /* or #2b2b2b, etc. */
+  color: #eee !important;
+}
+
+
+
+.dark-mode .settings-page {
+  background-color: #1a1a1a !important;
+  color: #eee !important;
+}
+
+.dark-mode .my-profile-page {
+  background-color: #1a1a1a !important;
+  color: #eee !important;
+}
+
+.dark-mode .messages-page {
+  background-color: #1a1a1a !important;
+  color: #eee !important;
+}
+
+.dark-mode .profile-page {
+  background-color: #1a1a1a !important;
+  color: #eee !important;
+}
+
+.dark-mode .logged-in-page {
+  background-color: #1a1a1a !important;
+  color: #eee !important;
+}
+
+.dark-mode .settings-right {
+  background-color: #2b2b2b !important;
+}
+
+.dark-mode .left-sidebar {
+  background-color: #2b2b2b !important;
+}
+
+.dark-mode .bubble-section {
+  background-color: #2b2b2b !important;
+  color: #f0f0f0 !important;
+  border-color: #444 !important; /* if you have borders, make them darker */
+}
+
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea {
+  background-color: #444;
+  color: #f0f0f0;
+  border: 1px solid #666;
+}
+
+.dark-mode input:focus,
+.dark-mode select:focus,
+.dark-mode textarea:focus {
+  border-color: #999;
+  box-shadow: none; 
+}
+
+/* Links, buttons, etc. (unchanged) */
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
 }
 
 button {
@@ -40,29 +300,16 @@ button {
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

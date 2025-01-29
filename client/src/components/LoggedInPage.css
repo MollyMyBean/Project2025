@@ -1,0 +1,1045 @@
+/* RESET */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  /* Instead of pure #f5f7f9, add a slight gradient: */
+  background: linear-gradient(to bottom right, #f5f7f9, #e8ebee);
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* MAIN LAYOUT WRAPPER */
+.logged-in-page {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  padding: 0 0.4rem;
+  box-sizing: border-box;
+  background-color: #f5f7f9;
+  color: #333;
+}
+.logged-in-page .bubble-section {
+  margin: 0.5rem 0.3rem; 
+  border: 1px solid #d3d3d3;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.logged-in-page.sidebars-collapsed {
+  padding: 10px;
+}
+.left-sidebar.collapsed,
+.right-sidebar.collapsed {
+  display: none !important;
+}
+.middle-column.expanded {
+  width: 100%;
+  margin: 0;
+}
+
+/* SIDEBARS */
+.right-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+}
+
+/* MIDDLE COLUMN */
+.middle-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* USER INFO */
+.user-info-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* This centers the avatar horizontally */
+}
+
+.menu-icon {
+  margin-right: 0.4rem;
+}
+
+/* TOP BAR */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem;
+  background: #fff;
+  border-radius: 8px 8px 0 0;
+}
+.home-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.top-bar-right {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* NO BOUNDING BOX AROUND ICON BUTTONS */
+.icon-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  height: auto;
+  cursor: pointer;
+  line-height: 0;
+  display: inline-flex;  /* so only icon is clickable */
+  align-items: center;
+  justify-content: center;
+  color: #4a90e2;
+  transition: color 0.15s ease;
+  /* Subtle background circle so icons are always visible */
+  background-color: rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  padding: 0.5rem;
+}
+.icon-btn:hover,
+.icon-btn:focus {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #35659f;
+}
+.icon-btn.liked {
+  color: #fff; /* White icon on a red background circle */
+  background-color: rgba(228, 52, 52, 0.85);
+}
+
+/* Remove outline when clicking */
+.icon-btn:focus,
+.icon-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* REPLACE ICONS WITH DIFFERENT ONES */
+.icon {
+  display: inline-block;
+  width: 1.2rem;
+  height: 1.2rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  vertical-align: middle;
+}
+.icon-search {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%234a90e2' stroke-width='2' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='17' y1='17' x2='20' y2='20'/></svg>");
+}
+.icon-menu {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%234a90e2' stroke-width='2' viewBox='0 0 24 24'><line x1='3' y1='6' x2='21' y2='6'/><line x1='3' y1='12' x2='21' y2='12'/><line x1='3' y1='18' x2='21' y2='18'/></svg>");
+}
+.icon-close {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%234a90e2' stroke-width='2' viewBox='0 0 24 24'><line x1='18' y1='6' x2='6' y2='18'/><line x1='6' y1='6' x2='18' y2='18'/></svg>");
+}
+.icon-wallet {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%234a90e2' stroke-width='2' viewBox='0 0 24 24'><path d='M2 7h20v14H2z'/><path d='M2 7V5a2 2 0 0 1 2-2h16'/><circle cx='20' cy='14' r='1'/></svg>");
+}
+/* Heart = red stroke by default */
+.icon-heart {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23e43434' stroke-width='2' viewBox='0 0 24 24'><path d='M12 21s-7.5-4.7-7.5-10c0-2.5 2-4.5 4.5-4.5 1.7 0 3.2 1 4 2.4 0.8-1.4 2.3-2.4 4-2.4 2.5 0 4.5 2 4.5 4.5 0 5.3-7.5 10-7.5 10z'/></svg>");
+}
+.icon-comment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%230080ff' stroke-width='2' viewBox='0 0 24 24'><path d='M21 11.5a8.38 8.38 0 0 0-.9-3.8A8.49 8.49 0 0 0 3 12.5v7l3-3h9.5a8.5 8.5 0 0 0 5.5-5z'/></svg>");
+}
+.icon-share {
+  width: 1.2rem;
+  height: 1.2rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%2300cc00' stroke-width='2' viewBox='0 0 24 24'><circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/><line x1='8.59' y1='13.51' x2='15.42' y2='17.49'/><line x1='15.41' y1='6.51' x2='8.59' y2='10.49'/></svg>");
+}
+
+/* NO VIDEOS YET */
+.no-videos-yet {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.no-videos-yet p {
+  font-size: 1.1rem;
+  color: #999;
+}
+
+/* SEARCH ROW */
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+.search-input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 1rem;
+  color: #333;
+  background-color: #fff;
+}
+.sort-select {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  color: #333;
+  background: #fff;
+  outline: none;
+}
+.filter-container {
+  display: flex;
+  gap: 0.5rem;
+}
+.filter-btn {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.filter-btn:hover {
+  background: #ebf1f5;
+}
+.filter-btn.active {
+  background: #4a90e2;
+  color: #fff;
+  border-color: #3983d9;
+}
+
+/* SINGLE VIDEO FULL */
+.single-video-full {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.video-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background-color: transparent;
+}
+.video-frame {
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem; 
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+}
+.video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* VIDEO ACTIONS */
+.video-actions {
+  position: absolute;
+  top: 35%;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  z-index: 2;
+  transform: translateY(-35%);
+}
+.like-count {
+  font-size: 0.8rem;
+  margin-left: 0.3rem;
+  color: white; /* ensures it's visible on any media */
+  font-weight: 600;
+}
+
+/* UPLOADER ROW => top-left corner */
+.uploader-row {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  z-index: 2;
+}
+.uploader-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.uploader-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+}
+.uploader-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.8);
+  color: #333;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* CAPTION => bottom-left */
+.video-caption {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  max-width: 60%;
+  line-height: 1.4;
+  z-index: 9999;
+}
+
+/* COMMENTS PANEL */
+.comments-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, #fff, #f9f9f9) !important;
+  border-top: 3px solid #4a90e2;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  border-radius: 16px 16px 0 0 !important;
+  max-height: 45%;
+  padding: 1rem;
+  overflow-y: auto;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
+  backdrop-filter: blur(4px);
+}
+.comments-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #4a90e2;
+  margin-bottom: 0.6rem;
+}
+.comment-count {
+  color: #333;
+  font-size: 0.95rem;
+}
+.comment-list {
+  margin-bottom: 0.6rem;
+  padding-right: 0.5rem;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* COMMENT BUBBLES */
+.single-comment-bubble {
+  background: #fff;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 0.6rem;
+  margin-bottom: 1rem !important;
+  border-top: 3px solid #4a90e2;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+.nested-reply {
+  background: #fafafa;
+}
+.bubble-top-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem !important;
+}
+.comment-user-pic {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #4a90e2;
+}
+.bubble-username {
+  font-weight: 700;
+  color: #333;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.creator-badge {
+  background: #ff0066;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+.bubble-content {
+  font-size: 0.85rem;
+  color: #444;
+  margin-bottom: 0.3rem;
+}
+.bubble-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.2rem;
+}
+.bubble-like-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  height: auto;
+}
+.bubble-like-btn.liked {
+  color: #e24343;
+}
+.comment-like-count {
+  font-size: 0.75rem;
+  margin-left: 0.3rem;
+  color: #555;
+}
+.bubble-reply-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  height: auto;
+}
+.bubble-reply-btn:hover {
+  color: #333;
+  transform: translateY(-1px);
+}
+
+/* NESTED REPLIES */
+.nested-replies {
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+  border-left: 2px solid #eee;
+  padding-left: 1rem;
+}
+
+/* SHOW MORE COMMENTS */
+.show-more-comments-btn {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 0.6rem;
+  transition: background 0.2s, transform 0.2s;
+}
+.show-more-comments-btn:hover {
+  background-color: #3c7ec2;
+  transform: translateY(-1px);
+}
+
+/* ADD COMMENT */
+.add-comment {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.replying-to {
+  background: #f0f9ff;
+  border: 1px solid #c4e1f7;
+  color: #333;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+}
+.cancel-reply-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.add-comment input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.4rem;
+  font-size: 0.85rem;
+  /* Pretty placeholders */
+  color: #333;
+}
+.add-comment input::placeholder {
+  color: #999;
+}
+.add-comment button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.add-comment button:hover {
+  background-color: #3c7ec2;
+  transform: translateY(-2px);
+}
+
+.menu-list li:nth-child(3) a {
+  position: relative;
+  padding-right: 16px; /* give room for the badge */
+}
+
+.menu-list li:nth-child(3) a::after {
+  content: "1";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: red;
+  color: #fff;
+  width: 14px;
+  height: 14px;
+  font-size: 10px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 14px;
+  pointer-events: none;
+}
+
+/* 2) The bottom-right message bubble with a "1" badge */
+.message-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background-color: #4a90e2;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 9999; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-bubble-icon {
+  color: #fff;
+  font-size: 20px;
+}
+.menu-list li:nth-child(3) a.has-new::after {
+  content: "1";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: red;
+  color: #fff;
+  width: 14px;
+  height: 14px;
+  font-size: 10px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 14px;
+  pointer-events: none;
+}
+
+/* If the link does NOT have "has-new", no badge. */
+
+/* The direct-message panel that appears after bubble click */
+.direct-message-panel {
+  position: fixed;          /* So it stays pinned above the bubble */
+  bottom: 80px;            /* Just above your bubble’s location */
+  right: 20px;
+  width: 240px;            /* A bit wider for the names */
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  padding: 1rem;
+  z-index: 9999;           /* On top of everything */
+}
+
+
+.direct-message-panel h4 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+}
+.direct-message-panel p {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.dm-chat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dm-chat-row:last-child {
+  border-bottom: none;
+}
+
+/* Hover effect to highlight a row */
+.dm-chat-row:hover {
+  background: #f9f9f9;
+}
+.dm-avatar-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
+/* Avatar image -> rounded + sized */
+.dm-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* The small red "1" on top of the avatar if unread>0 */
+.dm-unread-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #e43d3d;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Username styling */
+.dm-username {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* If you have an input or button in the panel, these can help: */
+.direct-message-panel form {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.direct-message-panel form input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.direct-message-panel form button {
+  align-self: flex-end;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.follow-message-popup {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background-color: #4caf50; /* green background */
+  color: #fff;
+  padding: 0.75rem 1.2rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  animation: fadeInOut 3s ease forwards; /* optional auto-fade */
+}
+
+.direct-message-panel form button:hover {
+  background: #3c7ec2;
+}
+.message-bubble-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* RIGHT SIDEBAR => SUGGESTED */
+.suggested-bar {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.simpler-suggested-title {
+  background-color: transparent;
+  color: #333;
+  margin: 0;
+  padding: 1.3rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  border-bottom: 1px solid #ccc;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.suggested-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+}
+.suggested-card {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+.card-inner {
+  z-index: 2;
+  width: 100%;
+  padding: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.suggested-avatar {
+  width: 40px; /* smaller */
+  height: 40px; /* smaller */
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #bdd6f2; /* ring highlight */
+}
+
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+.suggested-info {
+  display: flex;
+  flex-direction: column;
+  margin-right: auto;
+}
+.suggested-name {
+  font-size: 0.9rem; /* smaller */
+  font-weight: 700;
+  color: #333;
+}
+.suggested-handle {
+  font-size: 0.7rem; /* smaller */
+  color: #666;
+}
+.suggested-follow-btn {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.3rem 0.6rem; /* smaller */
+  font-size: 0.75rem; /* smaller */
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.suggested-follow-btn:hover {
+  transform: translateY(-2px);
+  background-color: #3c7ec2;
+}
+
+/* FUN FACT => HIDE OR KEEP */
+.fun-fact-block {
+  display: none !important;
+}
+
+/* SCROLL TO TOP */
+.scroll-to-top-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 50px;
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  background-color: #4a90e2;
+  color: #fff;
+  border: 2px solid #4a90e2;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.scroll-to-top-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .logged-in-page {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+  }
+  .left-sidebar {
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+  .right-sidebar {
+    display: none; /* or place it below the feed if you want */
+  }
+}
+
+@media (max-width: 480px) {
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  .menu-list {
+    font-size: 0.85rem; /* slightly smaller on mobile */
+  }
+  .search-input {
+    font-size: 0.9rem;
+  }
+  .uploader-pic {
+    width: 32px;
+    height: 32px;
+  }
+  .video-actions {
+    right: 10px;
+    gap: 1rem;
+  }
+  .video-caption {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem;
+  }
+  .bubble-content,
+  .bubble-username {
+    font-size: 0.8rem;
+  }
+  .bubble-like-btn {
+    font-size: 0.85rem;
+  }
+  .bubble-reply-btn {
+    font-size: 0.7rem;
+  }
+  .sort-select,
+  .filter-btn {
+    font-size: 0.75rem;
+  }
+}
+
+/* FULLSCREEN EXPANDED MODE */
+.middle-column.expanded .video-container {
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+/* Larger, filled icons when “liked” or “comment open”, etc. */
+.icon-btn.liked .icon-heart {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23e43434' stroke='%23e43434' stroke-width='2' viewBox='0 0 24 24'><path d='M12 21s-7.5-4.7-7.5-10c0-2.5 2-4.5 4.5-4.5 1.7 0 3.2 1 4 2.4 0.8-1.4 2.3-2.4 4-2.4 2.5 0 4.5 2 4.5 4.5 0 5.3-7.5 10-7.5 10z'/></svg>");
+}
+
+/* =========================================== */
+/* NEW ICON + NOTIFICATIONS PANEL STYLES HERE */
+/* =========================================== */
+
+/* The bell icon */
+.icon-bell {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%234a90e2' stroke-width='2' viewBox='0 0 24 24'><path d='M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9z'/><path d='M13.73 21a2 2 0 0 1-3.46 0'/></svg>");
+}
+
+/* Notifications panel */
+.notifications-panel {
+  position: absolute;
+  top: 60px;             /* just below .top-bar */
+  right: 10px;
+  width: 320px;          /* make it a bit wider */
+  background: linear-gradient(135deg, #ffffff, #f5faff);
+  border: 1px solid #cce1ff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  padding: 1.2rem;
+  z-index: 9999;
+  max-height: 400px;     /* scroll if many notifications */
+  overflow-y: auto;
+  font-family: sans-serif;
+  animation: fadeDown 0.2s ease-out;
+}
+
+
+.notifications-panel h4 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  border-bottom: 1px solid #dde7f2;
+  padding-bottom: 0.4rem;
+}
+
+
+.notif-item {
+  background: #fff;
+  margin-bottom: 0.6rem;
+  padding: 0.7rem 0.6rem;
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.notif-item:hover {
+  background-color: #eef6fd;
+  transform: translateY(-2px);
+}
+
+
+
+.notif-item:last-child {
+  margin-bottom: 0; /* no extra space at bottom */
+}
+
+.notif-item.read {
+  background-color: #fafafa;
+}
+.notif-item.unread {
+  background-color: #f5faff;
+}
+.notif-item button {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.notif-item button:hover {
+  color: #35659f;
+  text-decoration: none;
+}
+
+.notif-item p {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.notif-item small {
+  color: #666;
+  font-size: 0.7rem;
+}
+/* END LoggedInPage.css */

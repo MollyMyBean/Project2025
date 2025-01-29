@@ -1,0 +1,100 @@
+/* ===========================================================
+   SHARED SIDEBAR STYLES
+   (Use these exact classes/structure for consistent styling)
+=========================================================== */
+
+/* The main left sidebar container */
+.left-sidebar {
+    width: 220px;              /* consistent width across all pages */
+    flex-shrink: 0;
+    background: #fff;          /* white background */
+    border: 1px solid #ccc;    /* subtle border */
+    border-radius: 8px;
+    margin: 0.5rem 0.3rem;     /* same 'bubble' margin for all pages */
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;             /* consistent inner padding */
+  }
+
+  .left-sidebar.bubble-section{
+    width: 220px;              /* consistent width across all pages */
+    flex-shrink: 0;
+    background: #fff;          /* white background */
+    border: 1px solid #ccc;    /* subtle border */
+    border-radius: 8px;
+    margin: 0.5rem 0.3rem;     /* same 'bubble' margin for all pages */
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  
+  /* User info card at the top */
+  .user-info-card {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.5rem;
+    border: 2px solid #4a90e2;
+  }
+  .greeting {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #4a90e2;
+    margin-bottom: 1rem;
+  }
+  
+  /* The menu list */
+  .menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex: 1;
+    font-size: 1rem;        /* unify to 1rem across pages */
+    padding: 0;
+    margin: 0;
+  }
+  .menu-list li {
+    padding: 0.6rem;        /* unify spacing */
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .menu-list li:hover {
+    background-color: #ebf1f5; /* hover color consistent */
+  }
+  .menu-list li a {
+    text-decoration: none;
+    color: #4a90e2;         /* unify link color */
+    font-weight: 600;       /* unify text weight */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  
+  /* The Logout button, placed at bottom */
+  .logout-btn {
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.7rem 1.2rem;
+    cursor: pointer;
+    margin-top: auto;       /* push to bottom */
+    transition: background 0.2s, transform 0.2s;
+    margin-bottom: 1rem;
+  }
+  .logout-btn:hover {
+    background-color: #3c7ec2;
+    transform: translateY(-2px);
+  }
+  
