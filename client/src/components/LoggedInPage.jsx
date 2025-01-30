@@ -13,7 +13,7 @@ function getFullMediaUrl(url) {
   if (/^https?:\/\//i.test(url)) {
     return url; // Already absolute
   }
-  return `http://localhost:5000${url}`;
+  return url;
 }
 
 function LoggedInPage() {
@@ -80,7 +80,7 @@ function LoggedInPage() {
     (async () => {
       try {
         // 1) Check user session
-        const res = await fetch('http://localhost:5000/api/protected', {
+        const res = await fetch('/api/protected', {
           credentials: 'include'
         });
         if (res.status === 401) {
@@ -94,7 +94,7 @@ function LoggedInPage() {
         await fetchVideos();
 
         // 3) Fetch suggested
-        const sugRes = await fetch('http://localhost:5000/api/auth/get-suggested');
+        const sugRes = await fetch('/api/auth/get-suggested');
         const sugData = await sugRes.json();
         if (sugRes.ok && sugData.status === 'success') {
           setSuggestedCreators(sugData.suggested || []);
@@ -121,7 +121,7 @@ function LoggedInPage() {
     // 1) Fetch existing notifications
     (async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/notifications', {
+        const res = await fetch('api/notifications', {
           credentials: 'include'
         });
         const data = await res.json();
@@ -134,9 +134,7 @@ function LoggedInPage() {
     })();
 
     // 2) Connect socket for real-time notifications
-    const s = io('http://localhost:5000', {
-      withCredentials: true
-    });
+    io('/', { withCredentials: true }); 
     socketRef.current = s;
 
     // Join the user's room
@@ -158,7 +156,7 @@ function LoggedInPage() {
 
   async function fetchVideos() {
     try {
-      const res = await fetch('http://localhost:5000/api/videos/feed', {
+      const res = await fetch('api/videos/feed', {
         credentials: 'include'
       });
       const data = await res.json();
@@ -174,7 +172,7 @@ function LoggedInPage() {
 
   async function loadDmChats() {
     try {
-      const res = await fetch('http://localhost:5000/api/messages/dm-chats', {
+      const res = await fetch('api/messages/dm-chats', {
         credentials: 'include'
       });
       const data = await res.json();
@@ -189,7 +187,7 @@ function LoggedInPage() {
   const handleFollow = async (creatorId, creatorRole) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/profile/${creatorId}/follow`,
+        `api/profile/${creatorId}/follow`,
         {
           method: 'POST',
           credentials: 'include'
@@ -220,7 +218,7 @@ function LoggedInPage() {
   const handleLike = async (videoId) => {
     if (!user) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/videos/${videoId}/like`, {
+      const res = await fetch(`api/videos/${videoId}/like`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -252,7 +250,7 @@ function LoggedInPage() {
   const handleCommentLike = async (commentId) => {
     if (!user || !openCommentsVideo) return;
     try {
-      const url = `http://localhost:5000/api/videos/${openCommentsVideo}/comment/${commentId}/like`;
+      const url = `api/videos/${openCommentsVideo}/comment/${commentId}/like`;
       const res = await fetch(url, { method: 'POST', credentials: 'include' });
       const data = await res.json();
       if (res.ok) {
@@ -302,7 +300,7 @@ function LoggedInPage() {
         setVideoComments([]);
         return;
       }
-      const res = await fetch(`http://localhost:5000/api/videos/single/${videoId}`, {
+      const res = await fetch(`api/videos/single/${videoId}`, {
         credentials: 'include'
       });
       const data = await res.json();
@@ -323,8 +321,8 @@ function LoggedInPage() {
     if (!commentInput.trim()) return;
     try {
       const endpoint = replyParentId
-        ? `http://localhost:5000/api/videos/${videoId}/comment/${replyParentId}/reply`
-        : `http://localhost:5000/api/videos/${videoId}/comment`;
+        ? `api/videos/${videoId}/comment/${replyParentId}/reply`
+        : `api/videos/${videoId}/comment`;
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -338,7 +336,7 @@ function LoggedInPage() {
         setReplyParentId(null);
         // Refresh
         const updatedVideo = await fetch(
-          `http://localhost:5000/api/videos/single/${videoId}`,
+          `api/videos/single/${videoId}`,
           { credentials: 'include' }
         ).then((r) => r.json());
         if (updatedVideo.status === 'success') {
@@ -441,7 +439,7 @@ function LoggedInPage() {
 
   // Logout
   function handleLogout() {
-    fetch('http://localhost:5000/api/auth/logout', {
+    fetch('api/auth/logout', {
       method: 'POST',
       credentials: 'include'
     })
@@ -457,7 +455,7 @@ function LoggedInPage() {
   async function handleOpenChat(adminId) {
     setDmActiveChat(adminId);
     try {
-      await fetch('http://localhost:5000/api/messages/mark-as-read', {
+      await fetch('api/messages/mark-as-read', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -475,7 +473,7 @@ function LoggedInPage() {
     e.preventDefault();
     if (!dmReply.trim() || !dmActiveChat) return;
     try {
-      const res = await fetch('http://localhost:5000/api/messages', {
+      const res = await fetch('api/messages', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -502,7 +500,7 @@ function LoggedInPage() {
   async function markAsRead(notifId) {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/notifications/${notifId}/mark-read`,
+        `api/notifications/${notifId}/mark-read`,
         {
           method: 'PATCH',
           credentials: 'include'
