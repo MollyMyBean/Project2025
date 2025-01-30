@@ -1,4 +1,7 @@
-// server.js
+/*******************************************************
+ * server.js
+ * Repl: https://WeeImpureKnowledge.comonbro123.repl.co
+ *******************************************************/
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -8,26 +11,29 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 
-// Import routes
+// 1) Import your routes (same as before)
 const authRoutes = require('./routes/authRoutes');
-// NOTE: Import the route objects (NOT default) from messageRoutes & videoRoutes:
 const messageRoutes = require('./routes/messageRoutes');
 const videoRoutes = require('./routes/videoRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const masterRoutes = require('./routes/masterRoutes');
-const notificationsRoutes = require('./routes/notificationsRoutes'); // For notifications
+const notificationsRoutes = require('./routes/notificationsRoutes');
 
+// Create Express + HTTP + Socket.io
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    // We explicitly allow your Replit domain:
+    origin: 'https://WeeImpureKnowledge.comonbro123.repl.co',
     credentials: true
   }
 });
 
-// Connect Mongo
+/*******************************************************
+ * 2) Connect to Mongo using process.env.MONGO_URI
+ *******************************************************/
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -35,9 +41,11 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Basic middleware
+/*******************************************************
+ * 3) Basic middleware: JSON, sessions, and CORS
+ *******************************************************/
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://WeeImpureKnowledge.comonbro123.repl.co',
   credentials: true
 }));
 app.use(express.json());
@@ -47,14 +55,21 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Serve static => /public/uploads
-app.use(express.static(path.join(__dirname, 'public')));
+/*******************************************************
+ * 4) Serve the React build folder from /client/build
+ *******************************************************/
+const buildPath = path.join(__dirname, 'client', 'build');
+app.use(express.static(buildPath));
 
-// Inject "io" into the routes
+/*******************************************************
+ * 5) Wire up Socket.io to the routes that need it
+ *******************************************************/
 messageRoutes.setIO(io);
 videoRoutes.setIO(io);
 
-// Actually use those router objects
+/*******************************************************
+ * 6) API endpoints => prefix /api
+ *******************************************************/
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes.router);
 app.use('/api/videos', videoRoutes.router);
@@ -63,7 +78,9 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/master', masterRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
-// Test protected route
+/*******************************************************
+ * 7) Quick test route => /api/protected
+ *******************************************************/
 app.get('/api/protected', (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ status: 'error', message: 'Not authorized.' });
@@ -71,7 +88,17 @@ app.get('/api/protected', (req, res) => {
   return res.status(200).json({ status: 'success', user: req.session.user });
 });
 
-// Socket.io => calls + real-time notifications
+/*******************************************************
+ * 8) Fallback: serve index.html for all other paths
+ *    => allows React Router to handle them
+ *******************************************************/
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+/*******************************************************
+ * 9) Socket.io => calls, notifications, etc.
+ *******************************************************/
 io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
 
@@ -81,7 +108,7 @@ io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} joined user room: ${userId}`);
   });
 
-  // Example: WebRTC events, if used
+  // Example WebRTC signaling:
   socket.on('call-offer', (data) => {
     socket.to(data.toUserId).emit('call-offer', {
       fromUserId: socket.data.userId,
@@ -106,7 +133,9 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start server
+/*******************************************************
+ * 10) Start the server on process.env.PORT
+ *******************************************************/
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
