@@ -17,6 +17,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const masterRoutes = require('./routes/masterRoutes');
 const notificationsRoutes = require('./routes/notificationsRoutes'); // For notifications
+const twitterRoutes = require('./routes/twitter');
 
 const app = express();
 const server = http.createServer(app);
@@ -63,6 +64,9 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/master', masterRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
+app.use('/api/twitter', twitterRoutes);
+
+
 // Test protected route
 app.get('/api/protected', (req, res) => {
   if (!req.session.user) {
@@ -105,6 +109,8 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
+
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
