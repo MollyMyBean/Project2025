@@ -6,11 +6,12 @@ import './Sidebar.css';
 /** Utility: Convert relative path ("/uploads/foo.mp4") => absolute "http://localhost:5000/uploads/foo.mp4". */
 function getFullMediaUrl(url) {
   if (!url) return '';
-  if (/^https?:\/\//i.test(url)) {
-    return url; // Already absolute
-  }
+  if (/^https?:\/\//i.test(url)) return url;
   return `http://localhost:5000${url}`;
 }
+
+// Use a proper default avatar path (make sure public/images/default.png exists)
+const defaultAvatar = '/images/default.png';
 
 function ProfilePage() {
   const { adminId } = useParams();
@@ -90,10 +91,10 @@ function ProfilePage() {
   // Follow an admin
   async function handleFollow(creatorId) {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/profile/${creatorId}/follow`,
-        { method: 'POST', credentials: 'include' }
-      );
+      const res = await fetch(`http://localhost:5000/api/profile/${creatorId}/follow`, {
+        method: 'POST',
+        credentials: 'include'
+      });
       const data = await res.json();
       if (res.ok) {
         alert(data.message || 'Followed successfully!');
@@ -110,10 +111,10 @@ function ProfilePage() {
   // Subscribe => paid
   async function handleSubscribe() {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/profile/${adminId}/subscribe`,
-        { method: 'POST', credentials: 'include' }
-      );
+      const res = await fetch(`http://localhost:5000/api/profile/${adminId}/subscribe`, {
+        method: 'POST',
+        credentials: 'include'
+      });
       const data = await res.json();
       if (res.ok) {
         alert('Subscribed successfully (Paid)!');
@@ -135,10 +136,10 @@ function ProfilePage() {
   // Unlock a single locked post
   async function handleUnlock(contentId) {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/profile/${adminId}/unlock/${contentId}`,
-        { method: 'POST', credentials: 'include' }
-      );
+      const res = await fetch(`http://localhost:5000/api/profile/${adminId}/unlock/${contentId}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
       const data = await res.json();
       if (res.ok) {
         alert('Unlocked successfully!');
@@ -155,10 +156,10 @@ function ProfilePage() {
   async function handleBuyBundle(bundleId, title) {
     if (!window.confirm(`Buy bundle "${title}" now?`)) return;
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/profile/${adminId}/buy-bundle/${bundleId}`,
-        { method: 'POST', credentials: 'include' }
-      );
+      const res = await fetch(`http://localhost:5000/api/profile/${adminId}/buy-bundle/${bundleId}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
       const data = await res.json();
       if (res.ok) {
         alert(data.message || 'Bundle purchased successfully!');
@@ -166,7 +167,7 @@ function ProfilePage() {
         alert(data.message || 'Error buying bundle.');
       }
     } catch (err) {
-      console.error('handleBuyBundle error:', err);
+      console.error('buy-bundle error:', err);
       alert('Server error buying bundle.');
     }
   }
@@ -195,15 +196,12 @@ function ProfilePage() {
     const commentText = prompt('Enter your comment:');
     if (!commentText) return;
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/videos/${postId}/comment`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: commentText }),
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/videos/${postId}/comment`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: commentText }),
+      });
       if (!res.ok) {
         const data = await res.json();
         alert(data.message || 'Error commenting on the post.');
@@ -246,13 +244,13 @@ function ProfilePage() {
   const totalPosts = items.length;
   const totalLikes = items.reduce((acc, it) => acc + (it.likes?.length || 0), 0);
 
-  //  For the banner + avatar + story
+  // For the banner + avatar + story
   const userPicUrl = user.profilePic
     ? `${getFullMediaUrl(user.profilePic)}?cb=${cacheBuster}`
-    : '';
+    : defaultAvatar;
   const adminPicUrl = adminInfo.profilePic
     ? `${getFullMediaUrl(adminInfo.profilePic)}?cb=${cacheBuster}`
-    : '';
+    : defaultAvatar;
   const topBannerUrl = adminInfo.bannerPic
     ? `${getFullMediaUrl(adminInfo.bannerPic)}?cb=${cacheBuster}`
     : '/images/banner.jpg';
@@ -312,187 +310,173 @@ function ProfilePage() {
       </aside>
 
       {/* MIDDLE COLUMN => Admin feed */}
-      <main className="middle-column bubble-section">
-        <div
-          className="profile-inner-bubble"
-          style={{
-            backgroundImage: `url(${topBannerUrl})`,
-          }}
-        >
-          <div className="banner-overlay"></div>
-
-          <div className="admin-top-row">
-            <div className="admin-circle-avatar" onClick={handleAvatarClick}>
-              {/* If they have a story => onClick => show it, else just show avatar */}
-              {adminPicUrl && <img src={adminPicUrl} alt={adminInfo.username} />}
-            </div>
-            <div className="admin-name-stats">
-              <div className="admin-name-verified">
-                {adminInfo.username} <span className="verified-check">✔</span>
-              </div>
-              <div className="admin-stats-row">
-                <span>{totalPosts} posts</span>
-                <span>{totalLikes} ❤️</span>
-              </div>
-            </div>
+      <main className="middle-column new-middle-column">
+  {/* HERO SECTION */}
+      <section
+        className="profile-hero"
+        style={{ backgroundImage: `url(${topBannerUrl})` }}
+      >
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <div className="hero-avatar" onClick={handleAvatarClick}>
+            <img src={adminPicUrl} alt={adminInfo.username} />
           </div>
-
-          <div className="admin-bio-row">
-            <h2 className="admin-full-name">{adminInfo.username}</h2>
-            <div className="admin-online-status">● ONLINE</div>
-            <div className="admin-location-row">
-              <span>📍</span> Your dreams
-            </div>
-            <p className="admin-bio-text">
+          <div className="hero-info">
+            <h1 className="hero-name">
+              {adminInfo.username} <span className="verified-check">✔</span>
+            </h1>
+            <p className="hero-status">● ONLINE</p>
+            <p className="hero-location"><span>📍</span> Your dreams</p>
+            <p className="hero-bio">
               {adminInfo.bio || 'Some example bio text for the admin.'}
             </p>
-            <button className="show-more-btn">show more</button>
+            <button className="hero-showmore-btn">Show More</button>
           </div>
-
-          <div className="admin-offer-bar">
-            50% off if you follow me right now!
-          </div>
-
-          <div className="admin-subscribe-row">
-            <button className="subscribe-cta-btn" onClick={handleSubscribe}>
+          <div className="hero-cta">
+            <div className="offer-banner">
+              50% off if you follow me right now!
+            </div>
+            <button className="subscribe-btn" onClick={handleSubscribe}>
               Subscribe
               <span className="old-price">$12.99</span>
               <span className="new-price">$6.50/month</span>
             </button>
-            <div className="few-offers-left">🔥 Few offers left!</div>
-          </div>
-
-          <div className="admin-discount-row">
-            <button className="discount-btn">Grab your 50% off now</button>
+            <div className="limited-offers">🔥 Few offers left!</div>
           </div>
         </div>
+      </section>
 
-        {/* BUNDLES => if admin has them */}
-        {adminBundles.length > 0 && (
-          <div className="admin-bundles-section">
-            <h3>Available Bundles</h3>
-            <ul className="bundle-list">
-              {adminBundles.map((b) => (
-                <li key={b._id} className="bundle-item">
-                  {b.coverUrl && (
-                    <div className="bundle-image-wrap">
-                      <img
-                        src={getFullMediaUrl(b.coverUrl)}
-                        alt={b.title}
-                        className="bundle-cover-img"
-                      />
-                    </div>
-                  )}
-                  <div className="bundle-info">
-                    <div className="bundle-title-price">
-                      <strong className="bundle-title">{b.title}</strong>
-                      <span className="bundle-price">${b.price}</span>
-                    </div>
-                    {b.description && (
-                      <p className="bundle-description">{b.description}</p>
-                    )}
-                    {/* Only show "Buy Now" if not your own admin profile */}
-                    {user.id !== adminId && (
-                      <button
-                        onClick={() => handleBuyBundle(b._id, b.title)}
-                        className="bundle-buy-btn"
-                      >
-                        Buy Now
-                      </button>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+      {/* BUNDLES SECTION */}
+      {adminBundles.length > 0 && (
+      <section className="bundles-section">
+        <h2 className="bundles-title">Exclusive Bundles</h2>
+        <div className="bundles-container">
+          {adminBundles.map((bundle) => (
+            <div key={bundle._id} className="bundle-card">
+              {bundle.coverUrl && (
+                <div className="bundle-image">
+                  <img
+                    src={getFullMediaUrl(bundle.coverUrl)}
+                    alt={bundle.title}
+                  />
+                </div>
+              )}
+              <div className="bundle-info">
+                <h3 className="bundle-title">{bundle.title}</h3>
+                {bundle.description && (
+                  <p className="bundle-description">{bundle.description}</p>
+                )}
+                {/* Merge the price into the button text */}
+                {user.id !== adminId && (
+                  <button
+                    className="bundle-buy-btn"
+                    onClick={() => handleBuyBundle(bundle._id, bundle.title)}
+                  >
+                    Buy Now ${bundle.price}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
 
-        {/* Posts */}
-        <div className="admin-feed">
-          {items.length === 0 ? (
-            <p className="no-posts">No posts yet.</p>
-          ) : (
-            items.map((item) => {
-              // If videoUrl is missing => locked
+
+
+
+      {/* FEED POSTS SECTION */}
+      {/* FEED POSTS SECTION – VERTICAL LIST with Updated Action Icons */}
+      <section className="feed-section">
+        <h2 className="section-title">Latest Posts</h2>
+        {items.length === 0 ? (
+          <p className="no-posts">No posts yet.</p>
+        ) : (
+          <div className="feed-list">
+            {items.map((item) => {
+              // Determine if the post is locked
               const locked = !item.videoUrl;
+              // Build the media URL if available
               const itemMediaUrl = locked
                 ? ''
                 : `${getFullMediaUrl(item.videoUrl)}?cb=${cacheBuster}`;
-
               return (
-                <article key={item._id} className="feed-post-card">
-                  <div className="feed-post-top">
-                    {adminPicUrl && (
+                <div key={item._id} className="post-card">
+                  <div className="post-header">
+                    <img
+                      src={adminPicUrl}
+                      alt={adminInfo.username}
+                      className="post-avatar"
+                    />
+                    <span className="post-author">{adminInfo.username}</span>
+                  </div>
+                  <h3 className="post-title">{item.title}</h3>
+                  <div className="post-media">
+                    {locked ? (
+                      <div className="locked-post">
+                        <div className="locked-overlay">Locked Content</div>
+                        <p className="locked-price">Price: ${item.price || 5}</p>
+                        {user.id !== adminId && (
+                          <button
+                            className="unlock-btn"
+                            onClick={() => handleUnlock(item._id)}
+                          >
+                            Unlock for ${item.price || 5}
+                          </button>
+                        )}
+                      </div>
+                    ) : item.isPhoto ? (
                       <img
-                        src={adminPicUrl}
-                        alt={adminInfo.username}
-                        className="feed-post-avatar"
+                        src={itemMediaUrl}
+                        alt={item.title}
+                        className="media-img"
+                      />
+                    ) : (
+                      <video
+                        src={itemMediaUrl}
+                        controls
+                        className="media-video"
                       />
                     )}
-                    <div className="feed-post-name">{adminInfo.username}</div>
                   </div>
-                  <h3 className="feed-post-title">{item.title}</h3>
-
-                  {locked ? (
-                    <div className="locked-section">
-                      <div className="locked-overlay">Locked Content</div>
-                      <p className="locked-warning">
-                        Price: ${item.price || 5}
-                      </p>
-                      {/* If user is the same admin => not locked */}
-                      {user.id !== adminId && (
-                        <button
-                          onClick={() => handleUnlock(item._id)}
-                          className="btn-unlock"
-                        >
-                          Unlock for ${item.price || 5}
-                        </button>
-                      )}
-                    </div>
-                  ) : item.isPhoto ? (
-                    <img
-                      src={itemMediaUrl}
-                      alt={item.title}
-                      className="feed-post-media"
-                    />
-                  ) : (
-                    <video
-                      src={itemMediaUrl}
-                      crossOrigin="anonymous"
-                      controls
-                      className="feed-post-media"
-                    />
-                  )}
-
-                  <div className="feed-post-actions">
+                  <div className="post-actions">
                     <button
-                      className="post-action-btn"
+                      className={`icon-btn ${item.likes && item.likes.includes(user.id) ? 'liked' : ''}`}
                       onClick={() => handleLike(item._id)}
                       title="Like"
                     >
-                      ❤️
+                      <span className="icon icon-heart"></span>
+                      {item.likes && item.likes.length > 0 && (
+                        <span className="like-count">{item.likes.length}</span>
+                      )}
                     </button>
                     <button
-                      className="post-action-btn"
+                      className="icon-btn"
                       onClick={() => handleComment(item._id)}
                       title="Comment"
                     >
-                      💬
+                      <span className="icon icon-comment"></span>
                     </button>
                     <button
-                      className="post-action-btn"
+                      className="icon-btn"
                       onClick={() => handleShare(item._id)}
                       title="Share"
                     >
-                      ↗️
+                      <span className="icon icon-share"></span>
+                      {item.shareCount > 0 && (
+                        <span className="share-count">{item.shareCount}</span>
+                      )}
                     </button>
                   </div>
-                </article>
+                </div>
               );
-            })
-          )}
-        </div>
-      </main>
+            })}
+          </div>
+        )}
+      </section>
+
+    </main>
+
 
       {/* RIGHT SIDEBAR => suggested creators */}
       <aside className="right-sidebar bubble-section">
@@ -503,7 +487,7 @@ function ProfilePage() {
           {suggestedCreators.map((sc) => {
             const scPicUrl = sc.profilePic
               ? getFullMediaUrl(sc.profilePic) + `?cb=${cacheBuster}`
-              : '';
+              : defaultAvatar;
             let bgStyle = { backgroundSize: 'cover', backgroundPosition: 'center' };
             if (sc.bannerPic) {
               bgStyle.backgroundImage = `url(${getFullMediaUrl(sc.bannerPic)}?cb=${cacheBuster})`;
