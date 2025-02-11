@@ -113,6 +113,7 @@ html, body {
   border-radius: 50%;
   padding: 0.5rem;
 }
+
 .icon-btn:hover,
 .icon-btn:focus {
   background-color: rgba(255, 255, 255, 0.8);
@@ -288,6 +289,62 @@ html, body {
   font-weight: 600;
 }
 
+.like-count,
+.comment-count,
+.share-count {
+  color: #4a90e2 !important;  /* Matches your brand/blue icons */
+  font-weight: bold;
+}
+
+
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  /* You can style it further as you wish: */
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  padding: 4px;
+}
+.sidebar-toggle-btn:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.wallet-balance {
+  background: linear-gradient(45deg, #12D8FA, #4a90e2);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 1rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+.wallet-balance:hover {
+  transform: scale(1.03);
+  filter: brightness(1.1);
+}
+.tweet-action-btn {
+  /* keep your existing styles, then add: */
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+.tweet-action-btn.liked {
+  background: #ffebe6;  /* light red/pink background */
+  color: #e43434 !important; 
+  box-shadow: 0 0 0 1px #ffc1b9;
+}
+
+/* Slightly bigger box-shadow on hover for bubble-sections */
+.bubble-section:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+
 /* UPLOADER ROW => top-left corner */
 .uploader-row {
   position: absolute;
@@ -374,179 +431,11 @@ html, body {
   width: 100%;
 }
 
-/* COMMENT BUBBLES */
-.single-comment-bubble {
-  background: #fff;
-  border-radius: 12px !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 0.6rem;
-  margin-bottom: 1rem !important;
-  border-top: 3px solid #4a90e2;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-}
-.nested-reply {
-  background: #fafafa;
-}
-.bubble-top-row {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.4rem !important;
-}
-.comment-user-pic {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 2px solid #4a90e2;
-}
-.bubble-username {
-  font-weight: 700;
-  color: #333;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-.creator-badge {
-  background: #ff0066;
-  color: #fff;
-  font-size: 0.7rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-}
-.bubble-content {
-  font-size: 0.85rem;
-  color: #444;
-  margin-bottom: 0.3rem;
-}
-.bubble-actions {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 0.2rem;
-}
-.bubble-like-btn {
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: transform 0.2s;
-  outline: none;
-  padding: 0;
-  margin: 0;
-  width: auto;
-  height: auto;
-}
-.bubble-like-btn.liked {
-  color: #e24343;
-}
-.comment-like-count {
-  font-size: 0.75rem;
-  margin-left: 0.3rem;
-  color: #555;
-}
-.bubble-reply-btn {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: color 0.2s, transform 0.2s;
-  outline: none;
-  padding: 0;
-  margin: 0;
-  width: auto;
-  height: auto;
-}
-.bubble-reply-btn:hover {
-  color: #333;
-  transform: translateY(-1px);
-}
-
-/* NESTED REPLIES */
-.nested-replies {
-  margin-left: 2rem;
-  margin-top: 0.5rem;
-  border-left: 2px solid #eee;
-  padding-left: 1rem;
-}
-
-/* SHOW MORE COMMENTS */
-.show-more-comments-btn {
-  background-color: #4a90e2;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  margin-bottom: 0.6rem;
-  transition: background 0.2s, transform 0.2s;
-}
-.show-more-comments-btn:hover {
-  background-color: #3c7ec2;
-  transform: translateY(-1px);
-}
-
-/* ADD COMMENT */
-.add-comment {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-.replying-to {
-  background: #f0f9ff;
-  border: 1px solid #c4e1f7;
-  color: #333;
-  font-size: 0.85rem;
-  margin-bottom: 0.4rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 4px;
-  padding: 0.2rem 0.4rem;
-}
-.cancel-reply-btn {
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  font-size: 0.75rem;
-}
-.add-comment input {
-  flex: 1;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 0.4rem;
-  font-size: 0.85rem;
-  /* Pretty placeholders */
-  color: #333;
-}
-.add-comment input::placeholder {
-  color: #999;
-}
-.add-comment button {
-  background-color: #4a90e2;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-.add-comment button:hover {
-  background-color: #3c7ec2;
-  transform: translateY(-2px);
-}
 
 .menu-list li:nth-child(3) a {
   position: relative;
   padding-right: 16px; /* give room for the badge */
 }
-
 .menu-list li:nth-child(3) a::after {
   content: "1";
   position: absolute;
@@ -569,20 +458,185 @@ html, body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   background-color: #4a90e2;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 9999; 
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s, background-color 0.2s;
 }
 
+/* --- New Comment Section Redesign --- */
+.new-comments-panel {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-height: 45%;
+  overflow-y: auto;
+}
+
+.new-comments-panel .comments-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4a90e2;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+.comments-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comment-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.comment-card.nested {
+  margin-left: 2rem;
+  background: #f5f5f5;
+}
+
+.comment-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4a90e2;
+}
+
+.comment-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-meta {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.comment-text {
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.comment-like-btn,
+.comment-reply-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.comment-like-btn:hover,
+.comment-reply-btn:hover {
+  color: #4a90e2;
+}
+
+.comments-toggle {
+  text-align: center;
+  margin: 0.5rem 0;
+}
+.comments-toggle button {
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.comments-toggle button:hover {
+  background: #3c7ec2;
+}
+
+.comment-input-section {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.comment-input-section input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.comment-input-section input:focus {
+  border-color: #4a90e2;
+}
+.post-comment-btn {
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.post-comment-btn:hover {
+  background: #3c7ec2;
+  transform: translateY(-1px);
+}
+
+/* Replying-to section styling */
+.replying-to {
+  background: #f0f9ff;
+  border: 1px solid #c4e1f7;
+  color: #333;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cancel-reply-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+
+.message-bubble:hover {
+  transform: scale(1.05);
+  background-color: #3c7ec2;
+}
 .message-bubble-icon {
   color: #fff;
-  font-size: 20px;
+  font-size: 24px;
 }
 .menu-list li:nth-child(3) a.has-new::after {
   content: "1";
@@ -598,25 +652,39 @@ html, body {
   border-radius: 50%;
   text-align: center;
   line-height: 14px;
+  
   pointer-events: none;
 }
+
+
+
 
 /* If the link does NOT have "has-new", no badge. */
 
 /* The direct-message panel that appears after bubble click */
 .direct-message-panel {
-  position: fixed;          /* So it stays pinned above the bubble */
-  bottom: 80px;            /* Just above your bubble’s location */
+  position: fixed;
+  bottom: 80px; /* positioned just above the message bubble */
   right: 20px;
-  width: 240px;            /* A bit wider for the names */
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  width: 300px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   padding: 1rem;
-  z-index: 9999;           /* On top of everything */
+  z-index: 10000;
+  animation: slideUp 0.3s ease-out;
 }
 
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
 .direct-message-panel h4 {
   margin: 0 0 0.6rem;
@@ -692,22 +760,33 @@ html, body {
 }
 
 .direct-message-panel form input {
+  width: 100%;
+  padding: 0.5rem;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 0.4rem;
-  font-size: 0.85rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
+.direct-message-panel form input:focus {
+  border-color: #4a90e2;
+}
 .direct-message-panel form button {
-  align-self: flex-end;
-  background: #4a90e2;
+  background-color: #0d6efd;
   color: #fff;
+  padding: 0.5rem 0.75rem;
   border: none;
-  border-radius: 6px;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.direct-message-panel form button:hover {
+  background-color: #0b5ed7;
+  transform: translateY(-1px);
 }
 
 .follow-message-popup {
@@ -741,6 +820,32 @@ html, body {
   justify-content: center;
 }
 
+.dm-conversation-preview {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 0.8rem;
+  background: #f8f8f8;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.dm-message {
+  padding: 0.4rem;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+.dm-message.sent {
+  background-color: #d1e7dd;
+  text-align: right;
+}
+.dm-message.received {
+  background-color: #f8d7da;
+  text-align: left;
+}
+
+
 /* RIGHT SIDEBAR => SUGGESTED */
 .suggested-bar {
   background: #fff;
@@ -761,6 +866,227 @@ html, body {
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 }
+/* New styles for the Twitter-like feed */
+.twitter-feed {
+  padding: 1rem;
+}
+/* TWEET HEADER LAYOUT */
+.tweet-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.tweet-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.75rem;
+}
+.tweet-author-info {
+  display: flex;
+  flex-direction: column;
+}
+.tweet-author {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+.tweet-time {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 2px; /* small spacing */
+}
+
+/* TWEET BODY */
+.tweet-body {
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+/* Optional: wrap media in a .tweet-media container */
+.tweet-media {
+  margin-bottom: 0.5rem;
+  transition: transform 0.2s;
+}
+.tweet-media:hover {
+  transform: scale(1.01);
+}
+
+/* Add a subtle fade-in animation for each post-card if desired */
+.post-card {
+  animation: fadeInTweet 0.3s ease-out both;
+}
+@keyframes fadeInTweet {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tweet-input-section {
+  margin-bottom: 1rem;
+}
+.icon-photo {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%234A90E2' viewBox='0 0 24 24'><path d='M21 19V5H3v14h18zm-11-8l2 3 3-4 4 6H5l5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.icon-photo,
+.icon-gif {
+  background-size: 70% !important;
+  background-position: center !important;
+  background-color: transparent !important;
+  /* If your SVG was pure white, ensure the fill or stroke is #4a90e2 
+     or whatever color you want. */
+}
+
+
+.icon-gif {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%234A90E2' viewBox='0 0 24 24'><path d='M2 5v14h20V5H2zm13 2h2v2h-2v2h-2V7h2zm-6 2h1v3h2v2H7V7h2v2z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.icon-send {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' stroke='%234A90E2' fill='%234A90E2' stroke-width='0' viewBox='0 0 24 24'><path d='M2.01 21L23 12 2.01 3 2 10l15 2-15 2z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.tweet-media-btns {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+/* 1) Overall tweet box styling */
+.tweet-box-card {
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* 2) Make the textarea look nicer */
+.tweet-textarea {
+  width: 100%;
+  height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 1rem;
+  resize: none;  /* So it doesn’t grow bigger than the container */
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.tweet-textarea:focus {
+  border-color: #4a90e2;
+}
+
+/* 3) Place media icons and the tweet button on a footer row */
+.tweet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tweet-media-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* 4) A dedicated "Tweet" button style, a bit bigger than the tiny icon-btn */
+.tweet-post-btn {
+  background-color: #4a90e2;
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.tweet-post-btn:hover {
+  background-color: #3c7ec2;
+  transform: translateY(-1px);
+}
+
+
+.tweet-input-section textarea {
+  width: 100%;
+  height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.tweet-input-section button {
+  margin-top: 0.5rem;
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.posts-feed {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.post-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px; /* slightly bigger corner radius */
+  /* maybe a subtle gradient background */
+  background: linear-gradient(to bottom, #fff, #fdfdfd);
+}
+.icon-twitter {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234A90E2'><path d='M23.3 4.8c-.8.4-1.6.6-2.5.8.9-.5 1.6-1.3 1.9-2.3-.8.5-1.7.8-2.6 1-1.5-1.6-4-1.6-5.5-.1-1 1-1.3 2.4-.9 3.7-3.3-.2-6.3-1.7-8.3-4-.7 1.3-.3 2.9.9 3.7-.7 0-1.4-.2-1.9-.5v.1c0 1.9 1.3 3.5 3.1 3.9-.7.2-1.4.3-2 .1.6 1.9 2.3 3.2 4.2 3.3-1.6 1.3-3.6 2-5.5 1.8 1.6 1 3.4 1.6 5.3 1.6 6.3 0 9.9-5.3 9.9-9.9 0-.2 0-.4 0-.6.6-.4 1.3-1.1 1.8-1.7z'/></svg>");
+  /* Adjust other background properties so it matches your icon sizes */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.icon-video-camera {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%234A90E2' viewBox='0 0 24 24'><path d='M17 10.5V6c0-1.1-.9-2-2-2H3c-1.11 0-2 .9-2 2v10c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2v-4.5l4 4v-9l-4 4z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+
 .suggested-list {
   flex: 1;
   display: flex;
@@ -858,6 +1184,15 @@ html, body {
   background-color: #3c7ec2;
 }
 
+.video-actions .icon-btn {
+  background-color: rgba(255, 255, 255, 0.7); /* Light background so icons show up */
+  color: #4a90e2;
+}
+.video-actions .icon-btn:hover {
+  background-color: #fff;
+  color: #3572a3;
+}
+
 /* FUN FACT => HIDE OR KEEP */
 .fun-fact-block {
   display: none !important;
@@ -922,6 +1257,7 @@ html, body {
     font-size: 0.85rem;
     padding: 0.3rem 0.5rem;
   }
+  
   .bubble-content,
   .bubble-username {
     font-size: 0.8rem;
@@ -961,25 +1297,22 @@ html, body {
 /* Notifications panel */
 .notifications-panel {
   position: absolute;
-  top: 60px;             /* just below .top-bar */
+  top: 60px;             /* just below your top bar */
   right: 10px;
-  width: 320px;          /* make it a bit wider */
+  width: 320px;          /* adjust width as needed */
+  max-height: 400px;     /* maximum height with scroll */
+  overflow-y: auto;
   background: linear-gradient(135deg, #ffffff, #f5faff);
   border: 1px solid #cce1ff;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   padding: 1.2rem;
   z-index: 9999;
-  max-height: 400px;     /* scroll if many notifications */
-  overflow-y: auto;
-  font-family: sans-serif;
   animation: fadeDown 0.2s ease-out;
 }
 
-
 .notifications-panel h4 {
-  margin-top: 0;
-  margin-bottom: 0.8rem;
+  margin: 0 0 0.8rem 0;
   font-size: 1.1rem;
   font-weight: 700;
   color: #333;
@@ -988,58 +1321,241 @@ html, body {
   padding-bottom: 0.4rem;
 }
 
-
-.notif-item {
-  background: #fff;
-  margin-bottom: 0.6rem;
-  padding: 0.7rem 0.6rem;
-  border-radius: 6px;
-  transition: background 0.2s, transform 0.2s;
-  cursor: pointer;
+.no-notifs {
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+  margin-top: 0.8rem;
 }
 
-.notif-item:hover {
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.notif-card {
+  display: flex;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.notif-card:hover {
   background-color: #eef6fd;
   transform: translateY(-2px);
 }
 
-
-
-.notif-item:last-child {
-  margin-bottom: 0; /* no extra space at bottom */
+.notif-card.read {
+  opacity: 0.75;
 }
 
-.notif-item.read {
-  background-color: #fafafa;
+.notif-avatar {
+  flex-shrink: 0;
+  margin-right: 0.8rem;
 }
-.notif-item.unread {
-  background-color: #f5faff;
+
+.notif-avatar img,
+.default-notif-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4a90e2;
 }
-.notif-item button {
+
+.default-notif-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #cce1ff;
+  color: #4a90e2;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.notif-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notif-sender {
+  font-weight: 700;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.notif-type {
+  font-size: 0.8rem;
+  color: #4a90e2;
+  text-transform: uppercase;
+}
+
+.notif-message {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.notif-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notif-timestamp {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.mark-read-btn {
   background: none;
   border: none;
   color: #4a90e2;
-  cursor: pointer;
-  margin-top: 0.3rem;
   font-size: 0.75rem;
+  cursor: pointer;
   text-decoration: underline;
   padding: 0;
 }
 
-.notif-item button:hover {
+.mark-read-btn:hover {
   color: #35659f;
-  text-decoration: none;
 }
 
-.notif-item p {
-  font-size: 0.95rem;
-  color: #333;
-  margin: 0;
-  line-height: 1.3;
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.notif-item small {
+/* -------------- NEW/UPDATED RULES FOR BETTER BUTTONS & STYLES --------------- */
+
+/* 1) Tweet actions container (Like / Comment / Share / Delete) */
+.tweet-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  align-items: center;
+
+  /* optional: subtle divider above */
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+/* 2) Action button style => consistent pill shape + hover */
+.tweet-action-btn {
+  background: none;
+  border: none;
+  border-radius: 20px;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   color: #666;
-  font-size: 0.7rem;
+  transition: background 0.2s, transform 0.2s, color 0.2s;
 }
-/* END LoggedInPage.css */
+.tweet-action-btn:hover {
+  background: #e8f4ff;
+  transform: translateY(-1px);
+  color: #4a90e2;
+}
+.tweet-action-btn.liked {
+  color: #e43434 !important; /* red if liked */
+}
+.tweet-action-btn.delete-btn {
+  color: #c00;
+}
+.tweet-action-btn.delete-btn:hover {
+  background: #ffe1e1;
+  color: #900;
+}
+
+/* 3) Round media buttons for the Photo/GIF icons */
+.tweet-media-btn {
+  background: none;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74,144,226,0.1);
+}
+.tweet-media-btn:hover {
+  background: #f0f8ff;
+  transform: translateY(-1px);
+}
+
+/* 4) Post card subtle hover effect */
+.post-card {
+  position: relative;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  background-color: #fafafa;
+}
+
+
+/* 5) unify tweet-author & tweet-content styling */
+.post-author {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.2rem;
+}
+.post-content {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+.count-badge {
+  margin-left: 0.3rem;
+  font-size: 0.8rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.tweet-box-card:hover {
+  background-color: #f0f8ff; /* a subtle blue-ish background */
+}
+.post-author {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.2rem;
+}
+/* If you want a separate “@username” line, you can add it. */
+
+
+/* This applies to images in your “post content” area */
+.post-content img {
+  display: block;
+  margin: 0.75rem auto;
+  max-width: 90%;       /* so it doesn't overflow the card */
+  border-radius: 6px;   /* optional: slightly rounded corners */
+}
+
