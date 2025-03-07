@@ -18,11 +18,9 @@
   color: #333;
 }
 .profile-page .bubble-section {
-  border: none; /* remove the thick border */
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  margin: 0.5rem 0.3rem; 
+  border: 1px solid #d3d3d3;
   border-radius: 8px;
-  margin: 0.6rem 0.5rem;
   display: flex;
   flex-direction: column;
 }
@@ -50,19 +48,7 @@
   color: #333;
   margin-bottom: 1rem;
 }
-.logout-btn {
-  margin: 1rem;
-  padding: 0.5rem 1rem;
-  background: #e24343;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.logout-btn:hover {
-  background: #c33434;
-  transform: translateY(-2px);
-}
+
 
 /* MIDDLE COLUMN */
 .middle-column {
@@ -76,332 +62,26 @@
   display: none;
 }
 
-/* The top banner and admin avatar area */
-.profile-inner-bubble {
-  margin: 1rem auto;
-  width: 90%;
-  max-width: 1100px;
-  border-radius: 12px;
-  background-position: center top;
-  background-size: cover;
-  position: relative;
-  overflow: hidden;
-  min-height: 420px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.banner-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.5) 10%,
-    rgba(0,0,0,0.0) 50%,
-    rgba(255,255,255,0.2) 90%
-  );
-  z-index: 0;
-}
-.admin-top-row {
-  width: 100%;
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-}
-.admin-circle-avatar {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  border: 4px solid #fff;
-  overflow: hidden;
-  box-shadow: 0 0 0 3px #4a90e2;
-  margin-bottom: 0.5rem;
-}
-.admin-circle-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.admin-name-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 0.3rem;
-}
-.admin-name-verified {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-}
-.verified-check {
-  color: #4ae2ab;
-  font-size: 1.3rem;
-  margin-left: 0.4rem;
-  transform: translateY(-1px);
-}
-.admin-stats-row {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.2rem;
-  font-size: 0.9rem;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
 
-.admin-bio-row {
-  margin-top: auto; /* push it to bottom of the banner area */
-  margin-bottom: 1rem;
-  padding: 1rem 1.4rem;
-  background: rgba(255,255,255,0.85);
-  border-radius: 8px;
-  width: 90%;
-  max-width: 550px;
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-.admin-full-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 0.3rem;
-}
-.admin-online-status {
-  color: #4a90e2;
-  font-weight: 600;
-  margin: 0.2rem 0;
-}
-.admin-location-row {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.3rem;
-}
-.admin-bio-text {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: #333;
-}
-.show-more-btn {
-  background: none;
-  border: none;
-  color: #4a90e2;
-  font-size: 0.85rem;
-  text-decoration: underline;
-  cursor: pointer;
-  margin-top: 0.4rem;
-}
-
-/* Offer bar => slight transparency or highlight */
-.admin-offer-bar {
-  margin-top: 0.7rem;
-  background: linear-gradient(45deg, #ffeeaa, #ffd9a7);
-  color: #333;
-  border-radius: 6px;
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  border: 1px solid #e0e0e0;
-  text-align: center;
-  width: 70%;
-  max-width: 360px;
-  z-index: 2;
-  position: relative;
-}
-
-/* Subscribe CTA row => center each piece */
-.admin-subscribe-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.8rem;
-  justify-content: center;
-  width: 100%;
-  z-index: 2;
-  position: relative;
-}
-.subscribe-cta-btn {
-  background: linear-gradient(90deg, #f65163, #fa8e51);
-  border: none;
-  border-radius: 24px;
-  color: #fff;
-  font-weight: 700;
-  padding: 0.7rem 1.2rem;
-  font-size: 1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-.subscribe-cta-btn:hover {
-  transform: translateY(-2px);
-}
-.old-price {
-  text-decoration: line-through;
-  color: #fff;
-  font-size: 0.9rem;
-}
-.new-price {
-  background: #fff;
-  color: #fa8e51;
-  border-radius: 4px;
-  padding: 0.1rem 0.4rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.few-offers-left {
-  color: #e24343;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
 
 /* discount row */
-.admin-discount-row {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  z-index: 2;
-  margin-bottom: 1rem;
-}
-.discount-btn {
-  background-color: #fffbe6;
-  color: #fa8e51;
-  border: 1px solid #fedb9b;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-.discount-btn:hover {
-  background-color: #ffe8c5;
-  transform: translateY(-2px);
-}
+
+
+
 
 /* Feed posts */
-.admin-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  color: #333;
-  padding: 0 1rem;
-  margin-top: 1rem;
-}
-.no-posts {
-  font-size: 1rem;
-  color: #777;
-  text-align: center;
-  margin: 1rem 0;
-}
-.feed-post-card {
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.feed-post-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-.feed-post-top {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.4rem;
-}
-.feed-post-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid #4a90e2;
-  object-fit: cover;
-}
-.feed-post-name {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #4a90e2;
-}
-.feed-post-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #000;
-  margin-bottom: 0.6rem;
-}
-.feed-post-media {
-  width: 80%;
-  max-height: 500px;
-  display: block;
-  margin: 0 auto 0.6rem auto;
-  border-radius: 6px;
-  background: #f9f9f9;
-  object-fit: cover;
-}
+
+
+
+
+
 
 /* locked content */
-.locked-section {
-  background-color: #fafafa;
-  border: 2px dashed #ccc;
-  text-align: center;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 0.6rem;
-}
-.locked-overlay {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #e24343;
-  margin-bottom: 0.6rem;
-}
-.locked-warning {
-  color: #c44d4d;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-}
-.btn-unlock {
-  background-color: #4a90e2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-.btn-unlock:hover {
-  background-color: #3c7ec2;
-  transform: translateY(-2px);
-}
 
-/* post actions */
-.feed-post-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-.post-action-btn {
-  border: none;
-  background: #eef6ff;
-  color: #4a90e2;
-  padding: 0.5rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1.4rem;
-  transition: background 0.2s, transform 0.2s;
-}
-.post-action-btn:hover {
-  background: #dbe8fc;
-  transform: translateY(-2px);
-}
+
+
+
+
 
 /* RIGHT SIDEBAR */
 .right-sidebar {
@@ -579,14 +259,14 @@
 }
 .offer-banner {
   background: rgba(255,255,255,0.8);
-  color: #e24343;
+  color: #4a90e2;
   padding: 0.5rem 1rem;
   border-radius: 30px;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 .subscribe-btn {
-  background: linear-gradient(90deg, #f65163, #fa8e51);
+  background: linear-gradient(45deg, #12D8FA, #4a90e2);
   border: none;
   border-radius: 30px;
   padding: 0.8rem 1.2rem;
@@ -594,27 +274,31 @@
   color: #fff;
   cursor: pointer;
   transition: transform 0.2s;
+  display: inline-flex;       /* so we can align items horizontally */
+  align-items: center;
+  gap: 0.6rem;                /* spacing between text chunks */
+  position: relative;
 }
 .subscribe-btn:hover {
   transform: translateY(-3px);
 }
 .old-price {
   text-decoration: line-through;
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
 }
 .new-price {
   background: #fff;
-  color: #fa8e51;
+  color: #12D8FA;
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 .limited-offers {
   font-size: 1rem;
   font-weight: 700;
-  color: #e24343;
+  color: #12D8FA;
 }
 
 /* ---------------- Bundles Section ---------------- */
@@ -721,6 +405,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+/* The list of posts – each "post-card" becomes a tweet-like card */
 .feed-list {
   display: flex;
   flex-direction: column;
@@ -738,13 +423,12 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
+/* Post Card => tweet-like style */
 .post-card {
   background: #fdfdfd;
   border: 1px solid #ddd;
   border-radius: 10px;
-  overflow: hidden;
   padding: 1rem;
-  margin: 0 auto;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .icon-btn {
@@ -786,9 +470,11 @@
 .post-header {
   display: flex;
   align-items: center;
-  padding: 0.8rem;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
   background: #f5f5f5;
+  padding: 0.5rem;
+  border-radius: 6px;
 }
 .post-avatar {
   width: 40px;
@@ -798,27 +484,29 @@
   object-fit: cover;
 }
 .post-author {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #4a90e2;
-}
-.post-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  padding: 0.8rem;
   color: #333;
 }
+.post-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  color: #4a90e2; /* brand color highlight */
+}
 .post-media {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f8f8f8;
+  background: #fafafa;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
 }
 .media-img, .media-video {
   width: 100%;
-  max-height: 350px;
+  max-height: 450px;
   object-fit: cover;
+  border-radius: 6px;
 }
+
 .bundles-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -863,10 +551,39 @@
 /* Post Actions */
 .post-actions {
   display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #ececec;
+}
+.post-actions .icon-btn {
+  background: #f5f5f5;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 0.8rem;
-  background: #fafafa;
+  color: #555;
+  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.post-actions .icon-btn:hover {
+  background: #e2e2e2;
+  color: #333;
+}
+/* Like state => red background */
+.post-actions .icon-btn.liked {
+  background-color: #ffebec;
+  color: #e43434;
+}
+.post-actions .like-count,
+.post-actions .share-count {
+  position: absolute;
+  bottom: -10px;
+  font-size: 0.75rem;
+  color: #666;
 }
 .action-btn {
   background: #eef6ff;
