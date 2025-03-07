@@ -1,15 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './MessagesPage.css';
-import { io } from 'socket.io-client';
 import './Sidebar.css';
+import { io } from 'socket.io-client';
 
-const defaultAvatar = '';
+const defaultAvatar = '/images/default.png';
 
-/** 
- * Ensure we get a fully qualified URL for media:
- * If the DB has "/uploads/foo.jpg", prepend "http://localhost:5000".
- */
 function getFullMediaUrl(url) {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) {
@@ -59,30 +55,21 @@ function MessagesPage() {
   // Chat search
   const [chatSearch, setChatSearch] = useState('');
 
-  // ----------- TIP MODAL STATE -----------
+  // Tip modal states
   const [showTipModal, setShowTipModal] = useState(false);
   const [tipAmount, setTipAmount] = useState('');
   const [showTipSuccess, setShowTipSuccess] = useState(false);
   const [tipSuccessText, setTipSuccessText] = useState('');
 
-  useEffect(() => {
-    const savedDark = localStorage.getItem('darkMode') === 'true';
-    if (savedDark) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-  }, []);
-
-  /**
-   * On mount => check session, load user, fetch messages, set up socket, etc.
-   */
+  // ---------------
+  // INITIAL LOAD
+  // ---------------
   useEffect(() => {
     (async () => {
       try {
         // 1) Check session
         const res = await fetch('http://localhost:5000/api/protected', {
-          credentials: 'include'
+          credentials: 'include',
         });
         if (res.status === 401) {
           navigate('/');
@@ -93,12 +80,12 @@ function MessagesPage() {
 
         // 2) Load all followed + subscribed
         const followsRes = await fetch('http://localhost:5000/api/auth/my-follows', {
-          credentials: 'include'
+          credentials: 'include',
         });
         const followsData = await followsRes.json();
 
         const subsRes = await fetch('http://localhost:5000/api/auth/my-subscriptions', {
-          credentials: 'include'
+          credentials: 'include',
         });
         const subsData = await subsRes.json();
 
@@ -126,7 +113,6 @@ function MessagesPage() {
 
         // 4) set up socket
         setupSocket(data.user.id);
-
       } catch (err) {
         console.error('Error in initial load:', err);
       }
@@ -139,12 +125,12 @@ function MessagesPage() {
     };
   }, [navigate]);
 
-  /**
-   * Setup Socket.io for calls
-   */
+  // ---------------
+  // SOCKET IO
+  // ---------------
   const setupSocket = (myUserId) => {
     const socket = io('http://localhost:5000', {
-      withCredentials: true
+      withCredentials: true,
     });
     socketRef.current = socket;
 
@@ -159,7 +145,7 @@ function MessagesPage() {
       try {
         const previewStream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: true
+          audio: true,
         });
         localVideoRef.current.srcObject = previewStream;
         localVideoRef.current.muted = true;
@@ -167,7 +153,7 @@ function MessagesPage() {
 
         setIncomingCall({
           fromUserId: data.fromUserId,
-          offer: data.offer
+          offer: data.offer,
         });
       } catch (err) {
         console.error('Error accessing camera/mic for incoming call:', err);
@@ -199,13 +185,13 @@ function MessagesPage() {
     });
   };
 
-  /**
-   * Fetch messages
-   */
+  // ---------------
+  // FETCH MESSAGES
+  // ---------------
   const fetchMessages = async (silent = false) => {
     try {
       const res = await fetch('http://localhost:5000/api/messages', {
-        credentials: 'include'
+        credentials: 'include',
       });
       const data = await res.json();
       if (data.status !== 'success') {
@@ -219,9 +205,9 @@ function MessagesPage() {
     }
   };
 
-  /**
-   * Build conversation list from messages
-   */
+  // ---------------
+  // BUILD CONVERSATIONS
+  // ---------------
   useEffect(() => {
     if (!user) return;
 
@@ -230,10 +216,9 @@ function MessagesPage() {
 
     // Group messages by partner
     messages.forEach((msg) => {
-      const partner = (msg.sender?._id === myUserId) ? msg.receiver : msg.sender;
+      const partner = msg.sender?._id === myUserId ? msg.receiver : msg.sender;
       if (!partner || !partner._id || partner._id === myUserId) return;
 
-      // Make a shallow copy so we can override the profilePic safely
       const partnerCopy = { ...partner };
 
       // If we have a more up-to-date record in followedUsers, override:
@@ -246,7 +231,7 @@ function MessagesPage() {
       if (!convoMap[partnerId]) {
         convoMap[partnerId] = {
           partnerUser: partnerCopy,
-          messages: []
+          messages: [],
         };
       }
       convoMap[partnerId].messages.push(msg);
@@ -258,7 +243,7 @@ function MessagesPage() {
         const admCopy = { ...adm };
         convoMap[admCopy._id] = {
           partnerUser: admCopy,
-          messages: []
+          messages: [],
         };
       }
     });
@@ -269,7 +254,7 @@ function MessagesPage() {
       return c;
     });
 
-    // Sort pinned
+    // Sort pinned first
     convoArray.sort((a, b) => {
       const aPinned = pinnedChats.includes(a.partnerUser._id);
       const bPinned = pinnedChats.includes(b.partnerUser._id);
@@ -280,15 +265,15 @@ function MessagesPage() {
 
     setConversations(convoArray);
 
-    // if no activePartner, pick first
+    // If no active partner set, pick the first
     if (!activePartner && convoArray.length > 0) {
       setActivePartner(convoArray[0].partnerUser);
     }
-  }, [messages, followedUsers, user, activePartner, pinnedChats]);
+  }, [messages, followedUsers, user, pinnedChats, activePartner]);
 
-  /**
-   * Send text message
-   */
+  // ---------------
+  // SEND MESSAGE
+  // ---------------
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!activePartner) {
@@ -304,13 +289,13 @@ function MessagesPage() {
         recipientId: activePartner._id,
         content,
         mediaUrl: '',
-        mediaType: 'none'
+        mediaType: 'none',
       };
       const res = await fetch('http://localhost:5000/api/messages', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok && data.status === 'success' && data.newMessage) {
@@ -325,9 +310,9 @@ function MessagesPage() {
     }
   };
 
-  /**
-   * File upload => Photo/Video => then send as message
-   */
+  // ---------------
+  // SEND PHOTO/VIDEO
+  // ---------------
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !activePartner) {
@@ -341,7 +326,7 @@ function MessagesPage() {
       const upRes = await fetch('http://localhost:5000/api/messages/upload-file', {
         method: 'POST',
         credentials: 'include',
-        body: formData
+        body: formData,
       });
       const upData = await upRes.json();
       if (upRes.ok && upData.status === 'success' && upData.filePath) {
@@ -350,13 +335,13 @@ function MessagesPage() {
           recipientId: activePartner._id,
           content: '',
           mediaUrl: upData.filePath,
-          mediaType: upData.mediaType
+          mediaType: upData.mediaType,
         };
         const msgRes = await fetch('http://localhost:5000/api/messages', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
         });
         const msgData = await msgRes.json();
         if (msgRes.ok && msgData.status === 'success' && msgData.newMessage) {
@@ -374,9 +359,9 @@ function MessagesPage() {
     e.target.value = null;
   };
 
-  /**
-   * Start a video call
-   */
+  // ---------------
+  // VIDEO CALLS
+  // ---------------
   const handleStartCall = async () => {
     if (!activePartner) {
       alert('No conversation selected');
@@ -385,7 +370,7 @@ function MessagesPage() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: true
+        audio: true,
       });
       localVideoRef.current.srcObject = stream;
       localVideoRef.current.muted = true;
@@ -398,13 +383,11 @@ function MessagesPage() {
         if (e.candidate && socketRef.current) {
           socketRef.current.emit('ice-candidate', {
             toUserId: activePartner._id,
-            candidate: e.candidate
+            candidate: e.candidate,
           });
         }
       };
-      stream.getTracks().forEach((track) =>
-        localPeerConnection.addTrack(track, stream)
-      );
+      stream.getTracks().forEach((track) => localPeerConnection.addTrack(track, stream));
       localPeerConnection.ontrack = (e) => {
         remoteVideoRef.current.srcObject = e.streams[0];
         remoteVideoRef.current.play().catch(() => {});
@@ -415,7 +398,7 @@ function MessagesPage() {
 
       socketRef.current.emit('call-offer', {
         toUserId: activePartner._id,
-        offer
+        offer,
       });
     } catch (err) {
       console.error('Error starting call:', err);
@@ -423,9 +406,6 @@ function MessagesPage() {
     }
   };
 
-  /**
-   * Accept an incoming call
-   */
   const handleAcceptCall = async () => {
     if (!incomingCall) return;
     setCallInProgress(true);
@@ -435,7 +415,7 @@ function MessagesPage() {
       if (e.candidate && socketRef.current) {
         socketRef.current.emit('ice-candidate', {
           toUserId: incomingCall.fromUserId,
-          candidate: e.candidate
+          candidate: e.candidate,
         });
       }
     };
@@ -446,9 +426,7 @@ function MessagesPage() {
 
     const localStream = localVideoRef.current.srcObject;
     if (localStream) {
-      localStream.getTracks().forEach((trk) =>
-        remotePeerConnection.addTrack(trk, localStream)
-      );
+      localStream.getTracks().forEach((trk) => remotePeerConnection.addTrack(trk, localStream));
     }
 
     try {
@@ -458,7 +436,7 @@ function MessagesPage() {
 
       socketRef.current.emit('call-answer', {
         toUserId: incomingCall.fromUserId,
-        answer
+        answer,
       });
       setIncomingCall(null);
     } catch (err) {
@@ -467,22 +445,14 @@ function MessagesPage() {
     }
   };
 
-  /**
-   * Decline an incoming call
-   */
   const handleDeclineCall = () => {
     if (localVideoRef.current && localVideoRef.current.srcObject) {
-      localVideoRef.current.srcObject
-        .getTracks()
-        .forEach((trk) => trk.stop());
+      localVideoRef.current.srcObject.getTracks().forEach((trk) => trk.stop());
       localVideoRef.current.srcObject = null;
     }
     setIncomingCall(null);
   };
 
-  /**
-   * End the call
-   */
   const handleEndCall = () => {
     if (localPeerConnection) {
       localPeerConnection.close();
@@ -493,35 +463,31 @@ function MessagesPage() {
       remotePeerConnection = null;
     }
     if (localVideoRef.current && localVideoRef.current.srcObject) {
-      localVideoRef.current.srcObject
-        .getTracks()
-        .forEach((trk) => trk.stop());
+      localVideoRef.current.srcObject.getTracks().forEach((trk) => trk.stop());
       localVideoRef.current.srcObject = null;
     }
     if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
-      remoteVideoRef.current.srcObject
-        .getTracks()
-        .forEach((trk) => trk.stop());
+      remoteVideoRef.current.srcObject.getTracks().forEach((trk) => trk.stop());
       remoteVideoRef.current.srcObject = null;
     }
     setCallInProgress(false);
   };
 
-  /**
-   * Logout
-   */
+  // ---------------
+  // LOGOUT
+  // ---------------
   const handleLogout = () => {
     fetch('http://localhost:5000/api/auth/logout', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
     })
       .then(() => navigate('/'))
       .catch((err) => console.error('Logout error:', err));
   };
 
-  /**
-   * Pin/Unpin a chat
-   */
+  // ---------------
+  // PIN CHATS
+  // ---------------
   const handlePinChat = (partnerId) => {
     setPinnedChats((prev) => {
       if (prev.includes(partnerId)) {
@@ -531,9 +497,9 @@ function MessagesPage() {
     });
   };
 
-  /**
-   * Show Tip Modal if normal user => tip an admin
-   */
+  // ---------------
+  // TIP ADMIN
+  // ---------------
   const handleTipButtonClick = () => {
     if (!activePartner) return;
     if (user.role === 'admin') {
@@ -548,9 +514,6 @@ function MessagesPage() {
     setTipAmount('');
   };
 
-  /**
-   * Confirm tip => call /api/messages/tip-admin + show fancy success + insert chat bubble
-   */
   const handleConfirmTip = async () => {
     const amt = parseFloat(tipAmount);
     if (isNaN(amt) || amt <= 0) {
@@ -564,24 +527,23 @@ function MessagesPage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok && data.status === 'success') {
-        // Show dopamine success
         setTipSuccessText(`You tipped ${activePartner.username} $${amt.toFixed(2)}! 🎉`);
         setShowTipSuccess(true);
         setTimeout(() => setShowTipSuccess(false), 3000);
 
-        // Insert a local "X$ tip sent!" bubble
+        // Insert a local "tip sent" bubble
         const newLocalMessage = {
-          _id: 'local-tip-' + Date.now(),
+          _id: `local-tip-${Date.now()}`,
           sender: { _id: user.id },
           receiver: { _id: activePartner._id },
           content: `$${amt.toFixed(2)} tip sent!`,
           mediaUrl: '',
           mediaType: 'none',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, newLocalMessage]);
       } else {
@@ -593,9 +555,9 @@ function MessagesPage() {
     }
   };
 
-  /**
-   * Renders the left conversation list
-   */
+  // ---------------
+  // RENDER: LEFT CONVO LIST
+  // ---------------
   const renderConversationList = () => {
     if (!conversations.length) {
       return <p className="no-convos">No results</p>;
@@ -612,10 +574,8 @@ function MessagesPage() {
       const partner = c.partnerUser;
       const isActive = activePartner && partner._id === activePartner._id;
       const isPinned = pinnedChats.includes(partner._id);
-
-      // Force fresh load with ?cb=Date.now()
       const partnerPicFull = partner.profilePic
-        ? getFullMediaUrl(partner.profilePic) + '?cb=' + Date.now()
+        ? getFullMediaUrl(partner.profilePic) + `?cb=${Date.now()}`
         : defaultAvatar;
 
       return (
@@ -624,11 +584,7 @@ function MessagesPage() {
           className={`chat-list-item ${isActive ? 'active' : ''}`}
           onClick={() => setActivePartner(partner)}
         >
-          <img
-            src={partnerPicFull}
-            alt={partner.username}
-            className="chat-list-avatar"
-          />
+          <img src={partnerPicFull} alt={partner.username} className="chat-list-avatar" />
           <div className="chat-list-name">
             {partner.username}
             {isPinned && <span className="pin-badge">📌</span>}
@@ -648,9 +604,9 @@ function MessagesPage() {
     });
   };
 
-  /**
-   * Renders the conversation messages => .me vs .them
-   */
+  // ---------------
+  // RENDER: MESSAGES
+  // ---------------
   const renderMessages = () => {
     if (!activePartner) {
       return (
@@ -660,9 +616,7 @@ function MessagesPage() {
         </div>
       );
     }
-    const convo = conversations.find(
-      (c) => c.partnerUser._id === activePartner._id
-    );
+    const convo = conversations.find((c) => c.partnerUser._id === activePartner._id);
     if (!convo || !convo.messages.length) {
       return (
         <div className="no-chat-selected">
@@ -672,13 +626,11 @@ function MessagesPage() {
       );
     }
     return convo.messages.map((msg) => {
-      const isMe = (msg.sender && msg.sender._id === user.id);
-
-      // If it's image/video, no colored bubble background
+      const isMe = msg.sender && msg.sender._id === user.id;
       const isMedia = (msg.mediaType === 'image' || msg.mediaType === 'video') && msg.mediaUrl;
       const bubbleClass = `bubble ${isMe ? 'me' : 'them'} ${isMedia ? 'media-bubble' : ''}`;
-
       let messageContent;
+
       if (msg.mediaType === 'image' && msg.mediaUrl) {
         messageContent = (
           <img
@@ -701,14 +653,11 @@ function MessagesPage() {
 
       const timeString = new Date(msg.createdAt).toLocaleTimeString([], {
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
 
       return (
-        <div 
-          key={msg._id} 
-          className={bubbleClass}
-        >
+        <div key={msg._id} className={bubbleClass}>
           <div className="bubble-content">{messageContent}</div>
           <div className="bubble-time">{timeString}</div>
         </div>
@@ -716,24 +665,19 @@ function MessagesPage() {
     });
   };
 
-  // Force fresh load of the current user’s own avatar
+  // ---------------
+  // RENDER: MAIN
+  // ---------------
   const userPicUrl = user?.profilePic
     ? getFullMediaUrl(user.profilePic) + '?cb=' + Date.now()
     : defaultAvatar;
 
-  /**
-   * Render
-   */
   return (
     <div className="messages-page">
-      {/* LEFT SIDEBAR */}
+      {/* LEFT SIDEBAR => EXACTLY LIKE BEFORE */}
       <aside className="left-sidebar bubble-section">
         <div className="user-info-card">
-          <img
-            src={userPicUrl}
-            alt="User Avatar"
-            className="user-avatar"
-          />
+          <img src={userPicUrl} alt="User Avatar" className="user-avatar" />
           <h3 className="greeting">{user?.username}</h3>
         </div>
         <ul className="menu-list grow-space">
@@ -804,7 +748,7 @@ function MessagesPage() {
           </div>
         )}
 
-        {/* Incoming call */}
+        {/* Incoming call modal */}
         {incomingCall && (
           <div className="incoming-call-modal">
             <div className="modal-content">
@@ -827,11 +771,10 @@ function MessagesPage() {
           </div>
         )}
 
-        <div className="message-display">
-          {renderMessages()}
-        </div>
+        {/* Message list */}
+        <div className="message-display">{renderMessages()}</div>
 
-        {/* SEND BAR => plus tip button if partner is admin */}
+        {/* Send bar */}
         <div className="send-bar">
           <form className="send-form" onSubmit={handleSendMessage}>
             <input
@@ -839,19 +782,10 @@ function MessagesPage() {
               className="input-message"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={
-                activePartner
-                  ? 'Type a message...'
-                  : 'Select a conversation first...'
-              }
+              placeholder={activePartner ? 'Type a message...' : 'Select a conversation first...'}
               disabled={!activePartner}
             />
-            <button
-              type="submit"
-              className="btn-send"
-              disabled={!activePartner}
-              title="Send message"
-            >
+            <button type="submit" className="btn-send" disabled={!activePartner} title="Send">
               Send
             </button>
           </form>
@@ -864,7 +798,8 @@ function MessagesPage() {
               style={{ display: 'none' }}
               onChange={handleFileChange}
             />
-            {/* camera icon */}
+
+            {/* camera icon => for photo/video */}
             <button
               className="icon-btn media-btn"
               title="Send Photo/Video"
@@ -889,11 +824,7 @@ function MessagesPage() {
 
             {/* TIP button => only normal user => admin partner */}
             {user?.role !== 'admin' && activePartner?.role === 'admin' && (
-              <button
-                className="icon-btn tip-btn"
-                title="Tip Admin"
-                onClick={handleTipButtonClick}
-              >
+              <button className="icon-btn tip-btn" title="Tip Admin" onClick={handleTipButtonClick}>
                 💸
               </button>
             )}
@@ -901,38 +832,91 @@ function MessagesPage() {
         </div>
       </div>
 
-      {/* -------------- TIP MODAL -------------- */}
+      {/* Tip Modal */}
       {showTipModal && (
-        <div className="tip-modal-overlay">
-          <div className="tip-modal">
+      <div className="tip-modal-overlay">
+        <div className="tip-modal">
+          <div className="tip-modal-header">
             <h2>Send a Tip to {activePartner?.username}</h2>
-            <p>Support your favorite admin!</p>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowTipModal(false)}
+              title="Close"
+            >
+              &times;
+            </button>
+          </div>
+          <p className="tip-modal-description">
+            Support your favorite admin by sending a tip!
+          </p>
+
+          <div className="tip-presets">
+            {[1, 5, 10, 20].map((amt) => (
+              <button
+                key={amt}
+                onClick={() => setTipAmount(amt)}
+                className={`tip-preset-btn ${parseFloat(tipAmount) === amt ? "active" : ""}`}
+              >
+                ${amt}
+              </button>
+            ))}
+          </div>
+
+          <div className="tip-input-group">
+            <label htmlFor="tipAmountInput">Enter Tip Amount:</label>
             <input
+              id="tipAmountInput"
               type="number"
               className="tip-amount-input"
               placeholder="Enter tip amount"
               value={tipAmount}
               onChange={(e) => setTipAmount(e.target.value)}
             />
-            <div className="tip-modal-buttons">
-              <button
-                className="btn-confirm-tip"
-                onClick={handleConfirmTip}
-              >
-                Confirm Tip
-              </button>
-              <button
-                className="btn-cancel-tip"
-                onClick={() => setShowTipModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
+          </div>
+
+          <div className="tip-slider-group">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={tipAmount}
+              onChange={(e) => setTipAmount(e.target.value)}
+              className="tip-slider"
+            />
+            <div className="tip-slider-value">${tipAmount}</div>
+          </div>
+
+          <div className="tip-summary">
+            <p>
+              Your tip: <strong>${parseFloat(tipAmount).toFixed(2)}</strong>
+            </p>
+            <p>
+              Processing fee: <strong>$0.50</strong>
+            </p>
+            <p>
+              Total:{" "}
+              <strong>${(parseFloat(tipAmount) + 0.5).toFixed(2)}</strong>
+            </p>
+          </div>
+
+          <div className="tip-modal-buttons">
+            <button className="btn-confirm-tip" onClick={handleConfirmTip}>
+              Confirm Tip
+            </button>
+            <button
+              className="btn-cancel-tip"
+              onClick={() => setShowTipModal(false)}
+            >
+              Cancel
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* -------------- TIP SUCCESS POPUP -------------- */}
+
+
+      {/* Tip Success Popup */}
       {showTipSuccess && (
         <div className="tip-success-popup">
           <div className="popup-inner">
