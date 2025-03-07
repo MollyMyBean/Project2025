@@ -234,6 +234,194 @@ body.dark-mode .suggested-bar .suggested-list .suggested-card .card-inner {
   background-color: #1a1a1a !important;
   color: #eee !important;
 }
+/* Dark mode overrides for Twitter Feed */
+body.dark-mode {
+  background-color: #121212; /* Dark overall background */
+  color: #e0e0e0;
+}
+
+/* Twitter Feed container */
+body.dark-mode .twitter-feed {
+  background-color: #181818;
+}
+
+/* Tweet Box (Compose area) */
+body.dark-mode .tweet-box {
+  background-color: #242424;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+/* Tweet Box Header and Input */
+body.dark-mode .tweet-box .tweet-box-header,
+body.dark-mode .tweet-input {
+  background-color: #242424;
+  color: #e0e0e0;
+}
+
+/* Tweet Input Field */
+body.dark-mode .tweet-input {
+  background-color: #333;
+  border: 1px solid #444;
+}
+
+/* Tweet Post Button */
+body.dark-mode .tweet-post-btn {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+/* Posts Feed: Each Tweet/Post Card */
+body.dark-mode .posts-feed .post-card {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+/* Tweet Header (within post cards) */
+body.dark-mode .tweet-header {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+/* Optional: Adjust icon buttons for dark backgrounds */
+body.dark-mode .icon-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+/* Dark Mode Overrides for MyProfilePage */
+body.dark-mode {
+  background: #121212; /* Dark overall background */
+  color: #e0e0e0;
+}
+
+/* MyProfilePage Container */
+body.dark-mode .my-profile-page {
+  background: #121212;
+}
+
+/* Left Sidebar */
+body.dark-mode .my-profile-page .left-sidebar {
+  background: #1e1e1e;
+  border-color: #333;
+  color: #e0e0e0;
+}
+body.dark-mode .my-profile-page .left-sidebar .menu-list li a {
+  color: #ccc;
+}
+body.dark-mode .my-profile-page .left-sidebar .menu-list li a:hover {
+  color: #fff;
+}
+
+/* Main Profile Column */
+body.dark-mode .profile-main-column {
+  background: #1e1e1e;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+/* Top Bar */
+body.dark-mode .top-bar {
+  background: linear-gradient(120deg, #2c3e50, #34495e);
+  border-bottom-color: #444;
+}
+body.dark-mode .profile-page-title {
+  color: #fff;
+}
+
+/* Tabs */
+body.dark-mode .profile-tabs {
+  background: #2a2a2a;
+  border-bottom-color: #444;
+}
+body.dark-mode .profile-tabs .tab-btn {
+  background: #333;
+  color: #ccc;
+  border-color: #444;
+  transition: transform 0.25s ease;
+}
+body.dark-mode .profile-tabs .tab-btn.active {
+  background: #4a90e2;
+  color: #fff;
+  border-color: #4a90e2;
+}
+body.dark-mode .profile-tabs .tab-btn:hover {
+  background: #3c3c3c;
+}
+
+/* Cards Base */
+body.dark-mode .my-profile-page .card {
+  background: #1e1e1e;
+  border-color: #444;
+  box-shadow: none;
+  color: #e0e0e0;
+}
+body.dark-mode .my-profile-page .card-title {
+  color: #4a90e2;
+}
+
+/* Form Labels and Inputs */
+body.dark-mode .my-profile-page .form-label {
+  color: #ccc;
+}
+body.dark-mode .my-profile-page .info-fields-section textarea,
+body.dark-mode .my-profile-page .info-fields-section input[type="text"] {
+  background: #333;
+  border-color: #555;
+  color: #e0e0e0;
+}
+body.dark-mode .my-profile-page .info-fields-section textarea:focus,
+body.dark-mode .my-profile-page .info-fields-section input[type="text"]:focus {
+  border-color: #4a90e2;
+}
+
+/* Buttons (Save, Upload, etc.) */
+body.dark-mode .btn-save-profile,
+body.dark-mode .btn-submit-pic,
+body.dark-mode .btn-upload-media {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+}
+body.dark-mode .btn-submit-pic:hover,
+body.dark-mode .btn-upload-media:hover,
+body.dark-mode .btn-save-profile:hover {
+  background-color: #3c7ec2;
+}
+
+/* Banner and Preview Images */
+body.dark-mode .banner-preview,
+body.dark-mode .preview-banner-img {
+  border-color: #4a90e2;
+}
+body.dark-mode .hero-banner {
+  background-color: #1a1a1a; /* fallback in case no image is set */
+}
+body.dark-mode .hero-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Upload and Preview Cards */
+body.dark-mode .upload-item-card,
+body.dark-mode .preview-upload-card {
+  background: #1e1e1e;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+/* Preview Info Box */
+body.dark-mode .preview-info {
+  background: #1e1e1e;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+/* General Paragraphs and Text */
+body.dark-mode .my-profile-page p {
+  color: #ccc;
+}
+
 
 .dark-mode .my-profile-page {
   background-color: #1a1a1a !important;
