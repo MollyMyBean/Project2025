@@ -17,21 +17,20 @@ function SettingsPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  // Add a new tab => 'danger'
-  // Existing tabs => 'email' | 'password' | 'payment' | 'notifications' | 'appearance'
+  // TABS
   const [activeTab, setActiveTab] = useState('payment');
 
-  // Email fields
+  // EMAIL
   const [currentEmail, setCurrentEmail] = useState('');
   const [newEmail1, setNewEmail1] = useState('');
   const [newEmail2, setNewEmail2] = useState('');
 
-  // Password fields
+  // PASSWORD
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword1, setNewPassword1] = useState('');
   const [newPassword2, setNewPassword2] = useState('');
 
-  // Payment fields
+  // PAYMENT
   const [paymentMethod, setPaymentMethod] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExp, setCardExp] = useState('');
@@ -39,19 +38,17 @@ function SettingsPage() {
   const [paypalEmail, setPaypalEmail] = useState('');
   const [cryptoAddress, setCryptoAddress] = useState('');
 
-  // Profile Pic
-  const [profilePic, setProfilePic] = useState('');
-
-  // Display success/error messages
-  const [message, setMessage] = useState('');
-
-  // Notification states
+  // NOTIFICATIONS
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
 
-  // Appearance states
+  // APPEARANCE
   const [darkMode, setDarkMode] = useState(false);
   const [compactLayout, setCompactLayout] = useState(false);
+
+  // ALERT MESSAGE
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
   useEffect(() => {
     (async () => {
@@ -68,7 +65,6 @@ function SettingsPage() {
 
         // Initialize fields from user
         setCurrentEmail(data.user.email || '');
-        setProfilePic(data.user.profilePic || '');
         setPaymentMethod(data.user.paymentMethod || '');
         setCardNumber(data.user.cardNumber || '');
         setCardExp(data.user.cardExp || '');
@@ -122,12 +118,15 @@ function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
+        setMessageType('success');
         setMessage('PayPal connected and payment method updated!');
       } else {
+        setMessageType('error');
         setMessage(data.message || 'Error finalizing PayPal setup.');
       }
     } catch (err) {
       console.error('Finalize PayPal error:', err);
+      setMessageType('error');
       setMessage('Server error finalizing PayPal setup.');
     }
   };
@@ -144,17 +143,22 @@ function SettingsPage() {
   const switchTab = (tabName) => {
     setActiveTab(tabName);
     setMessage('');
+    setMessageType('');
   };
 
   // 1) Email
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setMessageType('');
+
     if (!currentEmail || !newEmail1 || !newEmail2) {
+      setMessageType('error');
       setMessage('Please fill out all email fields.');
       return;
     }
     if (newEmail1 !== newEmail2) {
+      setMessageType('error');
       setMessage('New emails do not match.');
       return;
     }
@@ -165,18 +169,20 @@ function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentEmail,
-          newEmail: newEmail1,
-          profilePic,
+          newEmail: newEmail1
         }),
       });
       const data = await res.json();
       if (res.ok) {
+        setMessageType('success');
         setMessage('Email updated successfully!');
       } else {
+        setMessageType('error');
         setMessage(data.message || 'Error updating email.');
       }
     } catch (err) {
       console.error('Email update error:', err);
+      setMessageType('error');
       setMessage('Server error updating email.');
     }
   };
@@ -185,11 +191,15 @@ function SettingsPage() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setMessageType('');
+
     if (!currentPassword || !newPassword1 || !newPassword2) {
+      setMessageType('error');
       setMessage('Please fill out all password fields.');
       return;
     }
     if (newPassword1 !== newPassword2) {
+      setMessageType('error');
       setMessage('New passwords do not match.');
       return;
     }
@@ -205,12 +215,15 @@ function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
+        setMessageType('success');
         setMessage('Password updated successfully!');
       } else {
+        setMessageType('error');
         setMessage(data.message || 'Error updating password.');
       }
     } catch (err) {
       console.error('Password update error:', err);
+      setMessageType('error');
       setMessage('Server error updating password.');
     }
   };
@@ -219,10 +232,12 @@ function SettingsPage() {
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setMessageType('');
 
-    // If user selects PayPal => "redirect" them to the flow
+    // If user selects PayPal => redirect them to the flow
     if (paymentMethod === 'paypal') {
       if (!paypalEmail) {
+        setMessageType('error');
         setMessage('Please enter a PayPal email address first.');
         return;
       }
@@ -233,7 +248,7 @@ function SettingsPage() {
       return;
     }
 
-    // Otherwise, not PayPal => store data
+    // Otherwise, store data for credit card / crypto
     try {
       const res = await fetch('http://localhost:5000/api/auth/update', {
         method: 'POST',
@@ -250,37 +265,37 @@ function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
+        setMessageType('success');
         setMessage('Payment method updated!');
       } else {
+        setMessageType('error');
         setMessage(data.message || 'Error updating payment method.');
       }
     } catch (err) {
       console.error('Payment update error:', err);
+      setMessageType('error');
       setMessage('Server error updating payment.');
     }
   };
 
   // 4) Notifications
-  const handleNotificationsSubmit = async (e) => {
+  const handleNotificationsSubmit = (e) => {
     e.preventDefault();
-    setMessage('');
-    // For now, just show a local message. You could store in DB if needed.
+    setMessageType('success');
     setMessage('Notification settings saved!');
   };
 
-  // 5) Appearance => store localStorage
-  const handleAppearanceSubmit = async (e) => {
+  // 5) Appearance
+  const handleAppearanceSubmit = (e) => {
     e.preventDefault();
-    setMessage('');
+    setMessageType('success');
+    setMessage('Appearance settings saved!');
 
-    // Save to localStorage so it persists across refreshes
     localStorage.setItem('darkMode', darkMode);
     localStorage.setItem('compactLayout', compactLayout);
-
-    setMessage('Appearance settings saved!');
   };
 
-  // 6) **Delete My Account** => calls new /api/auth/delete-self route
+  // 6) Delete My Account
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
       'Are you absolutely sure you want to delete your account? This action cannot be undone.'
@@ -295,7 +310,6 @@ function SettingsPage() {
       const data = await res.json();
       if (res.ok && data.status === 'success') {
         alert('Your account has been deleted.');
-        // Usually the server logs you out, but we can also redirect:
         navigate('/');
       } else {
         alert(data.message || 'Error deleting account.');
@@ -312,7 +326,7 @@ function SettingsPage() {
 
   return (
     <div className="settings-page">
-      {/* LEFT SIDEBAR */}
+      {/* LEFT SIDEBAR -- DO NOT TOUCH */}
       <aside className="left-sidebar bubble-section">
         <div className="user-info-card">
           <img
@@ -353,8 +367,9 @@ function SettingsPage() {
           Logout
         </button>
       </aside>
+      {/* END LEFT SIDEBAR */}
 
-      {/* RIGHT => MAIN CONTENT: TABS + FORMS */}
+      {/* RIGHT SIDE CONTENT */}
       <div className="settings-right bubble-section">
         <div className="settings-tabs">
           <button
@@ -387,7 +402,6 @@ function SettingsPage() {
           >
             Appearance
           </button>
-          {/* NEW Danger Zone tab */}
           <button
             className={`settings-tab-btn ${activeTab === 'danger' ? 'active' : ''}`}
             onClick={() => switchTab('danger')}
@@ -397,273 +411,279 @@ function SettingsPage() {
           </button>
         </div>
 
-        {message && <p className="settings-message">{message}</p>}
+        {/* ALERT (DISMISSIBLE) */}
+        {message && (
+          <div className={`settings-alert ${messageType}`}>
+            <span>{message}</span>
+            <button
+              className="alert-close"
+              onClick={() => {
+                setMessage('');
+                setMessageType('');
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
-        <div className="settings-form-container">
+        <div className="settings-tab-content">
           {/* EMAIL TAB */}
           {activeTab === 'email' && (
-            <form onSubmit={handleEmailSubmit} className="settings-form">
-              <div className="form-group">
-                <label className="form-label">Profile Picture URL</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Enter image URL..."
-                  value={profilePic}
-                  onChange={(e) => setProfilePic(e.target.value)}
-                />
-                <div className="profile-pic-preview">
-                  <img src={profilePic || defaultAvatar} alt="Preview" />
+            <div className="settings-card">
+              <h3 className="card-title">Update Email</h3>
+              <form onSubmit={handleEmailSubmit} className="settings-form">
+                <div className="form-group">
+                  <label className="form-label">Current Email</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="Current email address"
+                    value={currentEmail}
+                    disabled
+                  />
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label className="form-label">Current Email</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="Current email address"
-                  value={currentEmail}
-                  onChange={(e) => setCurrentEmail(e.target.value)}
-                  disabled
-                />
-              </div>
+                <div className="form-group">
+                  <label className="form-label">New Email</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="Enter new email"
+                    value={newEmail1}
+                    onChange={(e) => setNewEmail1(e.target.value)}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label className="form-label">New Email</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="Enter new email"
-                  value={newEmail1}
-                  onChange={(e) => setNewEmail1(e.target.value)}
-                />
-              </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm New Email</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="Re-enter new email"
+                    value={newEmail2}
+                    onChange={(e) => setNewEmail2(e.target.value)}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label className="form-label">Confirm New Email</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="Re-enter new email"
-                  value={newEmail2}
-                  onChange={(e) => setNewEmail2(e.target.value)}
-                />
-              </div>
-
-              <button type="submit" className="btn-save">Save Email</button>
-            </form>
+                <button type="submit" className="btn-save">
+                  Save Email
+                </button>
+              </form>
+            </div>
           )}
 
           {/* PASSWORD TAB */}
           {activeTab === 'password' && (
-            <form onSubmit={handlePasswordSubmit} className="settings-form">
-              <div className="form-group">
-                <label className="form-label">Current Password</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Enter current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
-              </div>
+            <div className="settings-card">
+              <h3 className="card-title">Change Password</h3>
+              <form onSubmit={handlePasswordSubmit} className="settings-form">
+                <div className="form-group">
+                  <label className="form-label">Current Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Enter current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label className="form-label">New Password</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Enter new password"
-                  value={newPassword1}
-                  onChange={(e) => setNewPassword1(e.target.value)}
-                />
-              </div>
+                <div className="form-group">
+                  <label className="form-label">New Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Enter new password"
+                    value={newPassword1}
+                    onChange={(e) => setNewPassword1(e.target.value)}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label className="form-label">Confirm New Password</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Re-enter new password"
-                  value={newPassword2}
-                  onChange={(e) => setNewPassword2(e.target.value)}
-                />
-              </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm New Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Re-enter new password"
+                    value={newPassword2}
+                    onChange={(e) => setNewPassword2(e.target.value)}
+                  />
+                </div>
 
-              <button type="submit" className="btn-save">Save Password</button>
-            </form>
+                <button type="submit" className="btn-save">
+                  Save Password
+                </button>
+              </form>
+            </div>
           )}
 
           {/* PAYMENT TAB */}
           {activeTab === 'payment' && (
-            <form onSubmit={handlePaymentSubmit} className="settings-form">
-              <div className="form-group">
-                <label className="form-label">Payment Method</label>
-                <select
-                  className="form-input"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <option value="">-- Select --</option>
-                  <option value="creditcard">Credit Card</option>
-                  <option value="paypal">PayPal</option>
-                  <option value="crypto">Crypto</option>
-                </select>
-              </div>
-
-              {paymentMethod === 'creditcard' && (
-                <>
-                  <div className="form-group">
-                    <label className="form-label">Card Number</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Expiration (MM/YY)</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="e.g. 07/25"
-                      value={cardExp}
-                      onChange={(e) => setCardExp(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">CVC</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="e.g. 123"
-                      value={cardCVC}
-                      onChange={(e) => setCardCVC(e.target.value)}
-                    />
-                  </div>
-                </>
-              )}
-
-              {paymentMethod === 'paypal' && (
+            <div className="settings-card">
+              <h3 className="card-title">Payment Settings</h3>
+              <p className="card-description">Select your preferred payment method below.</p>
+              <form onSubmit={handlePaymentSubmit} className="settings-form">
                 <div className="form-group">
-                  <label className="form-label">PayPal Email</label>
-                  <input
-                    type="email"
+                  <label className="form-label">Payment Method</label>
+                  <select
                     className="form-input"
-                    placeholder="your@email.com"
-                    value={paypalEmail}
-                    onChange={(e) => setPaypalEmail(e.target.value)}
-                  />
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="">-- Select --</option>
+                    <option value="creditcard">Credit Card</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="crypto">Crypto</option>
+                  </select>
                 </div>
-              )}
 
-              {paymentMethod === 'crypto' && (
-                <div className="form-group">
-                  <label className="form-label">Crypto Address</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="0x123abc..."
-                    value={cryptoAddress}
-                    onChange={(e) => setCryptoAddress(e.target.value)}
-                  />
-                </div>
-              )}
+                {paymentMethod === 'creditcard' && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">Card Number</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="XXXX XXXX XXXX XXXX"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Expiration (MM/YY)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. 07/25"
+                        value={cardExp}
+                        onChange={(e) => setCardExp(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">CVC</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. 123"
+                        value={cardCVC}
+                        onChange={(e) => setCardCVC(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
 
-              <button type="submit" className="btn-save">
-                Save Payment
-              </button>
-            </form>
+                {paymentMethod === 'paypal' && (
+                  <div className="form-group">
+                    <label className="form-label">PayPal Email</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="your@email.com"
+                      value={paypalEmail}
+                      onChange={(e) => setPaypalEmail(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {paymentMethod === 'crypto' && (
+                  <div className="form-group">
+                    <label className="form-label">Crypto Address</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="0x123abc..."
+                      value={cryptoAddress}
+                      onChange={(e) => setCryptoAddress(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <button type="submit" className="btn-save">
+                  Save Payment
+                </button>
+              </form>
+            </div>
           )}
 
           {/* NOTIFICATIONS TAB */}
           {activeTab === 'notifications' && (
-            <form onSubmit={handleNotificationsSubmit} className="settings-form">
-              <h4>Notification Preferences</h4>
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={emailNotifications}
-                    onChange={() => setEmailNotifications(!emailNotifications)}
-                  />
-                  Email Notifications
-                </label>
-              </div>
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={pushNotifications}
-                    onChange={() => setPushNotifications(!pushNotifications)}
-                  />
-                  Push Notifications
-                </label>
-              </div>
-              <p className="tab-note">
-                Choose how you want to receive updates about new content, messages, or offers.
-              </p>
-              <button type="submit" className="btn-save">
-                Save Notifications
-              </button>
-            </form>
+            <div className="settings-card">
+              <h3 className="card-title">Notifications</h3>
+              <form onSubmit={handleNotificationsSubmit} className="settings-form">
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={emailNotifications}
+                      onChange={() => setEmailNotifications(!emailNotifications)}
+                    />
+                    Email Notifications
+                  </label>
+                </div>
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={pushNotifications}
+                      onChange={() => setPushNotifications(!pushNotifications)}
+                    />
+                    Push Notifications
+                  </label>
+                </div>
+                <p className="tab-note">
+                  Choose how you want to receive updates about new content, messages, or offers.
+                </p>
+                <button type="submit" className="btn-save">
+                  Save Notifications
+                </button>
+              </form>
+            </div>
           )}
 
           {/* APPEARANCE TAB */}
           {activeTab === 'appearance' && (
-            <form onSubmit={handleAppearanceSubmit} className="settings-form">
-              <h4>Appearance & Layout</h4>
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={darkMode}
-                    onChange={() => setDarkMode(!darkMode)}
-                  />
-                  Enable Dark Mode
-                </label>
-              </div>
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={compactLayout}
-                    onChange={() => setCompactLayout(!compactLayout)}
-                  />
-                  Use Compact Layout
-                </label>
-              </div>
-              <p className="tab-note">
-                Dark Mode and compact layout can improve readability or help reduce eye strain.
-              </p>
-              <button type="submit" className="btn-save">
-                Save Appearance
-              </button>
-            </form>
+            <div className="settings-card">
+              <h3 className="card-title">Appearance</h3>
+              <form onSubmit={handleAppearanceSubmit} className="settings-form">
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={darkMode}
+                      onChange={() => setDarkMode(!darkMode)}
+                    />
+                    Enable Dark Mode
+                  </label>
+                </div>
+                <div className="form-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={compactLayout}
+                      onChange={() => setCompactLayout(!compactLayout)}
+                    />
+                    Use Compact Layout
+                  </label>
+                </div>
+                <p className="tab-note">
+                  Dark Mode and compact layout can improve readability or help reduce eye strain.
+                </p>
+                <button type="submit" className="btn-save">
+                  Save Appearance
+                </button>
+              </form>
+            </div>
           )}
 
-          {/* DANGER ZONE TAB => Delete My Account */}
+          {/* DANGER ZONE TAB */}
           {activeTab === 'danger' && (
-            <div className="settings-form" style={{ backgroundColor: '#fff5f5', borderColor: '#ffcdd2' }}>
-              <h4 style={{ color: '#c0392b' }}>Danger Zone</h4>
-              <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
+            <div className="settings-card danger-card">
+              <h3 className="card-title danger-title">Danger Zone</h3>
+              <p className="danger-text">
                 Deleting your account is permanent and cannot be undone. All your data will be removed.
               </p>
-              <button
-                onClick={handleDeleteAccount}
-                style={{
-                  backgroundColor: '#e74c3c',
-                  color: '#fff',
-                  padding: '0.6rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
+              <button onClick={handleDeleteAccount} className="btn-delete-account">
                 Delete My Account
               </button>
             </div>
