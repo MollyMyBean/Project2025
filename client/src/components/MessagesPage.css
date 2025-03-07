@@ -1,3 +1,5 @@
+/* MessagesPage.css */
+
 /* RESET */
 *,
 *::before,
@@ -19,15 +21,14 @@ html, body {
 /* MAIN LAYOUT */
 .messages-page {
   display: flex;
-  /* remove the gap so we rely on each .bubble-section margin */
   width: 100%;
   height: 100vh; 
   background-color: #ffffff;
-  /* If you want slight horizontal padding like other pages, you can add: */
+  /* If desired, add a bit of horizontal spacing: */
   padding: 0 0.4rem;
 }
 
-/* All .bubble-section => same margin as in your other pages: 0.5rem 0.3rem */
+/* Each .bubble-section => same margin style as other pages. */
 .messages-page .bubble-section {
   margin: 0.5rem 0.3rem; 
   background: #fff;
@@ -38,12 +39,12 @@ html, body {
   flex-direction: column;
 }
 
-/* LEFT SIDEBAR => fixed width */
+/* LEFT SIDEBAR: same as the other pages */
 .menu-icon {
   margin-right: 0.5rem;
 }
 
-/* CHATS COLUMN => fixed width */
+/* CHATS COLUMN => narrower, scrollable */
 .chats-column {
   width: 280px;
   flex-shrink: 0;
@@ -79,6 +80,13 @@ html, body {
   overflow-y: auto;
   padding: 0.6rem;
 }
+.conversations-wrapper,
+.message-display {
+  /* For Firefox */
+  scrollbar-width: none; 
+}
+
+
 .no-convos {
   font-size: 0.9rem;
   color: #777;
@@ -86,14 +94,16 @@ html, body {
 }
 .chat-list-item {
   display: flex;
+  border: 2px solid #cddff3; 
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   padding: 6px;
   margin-bottom: 4px;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .chat-list-item:hover {
   background-color: #e2eafe;
 }
@@ -127,7 +137,7 @@ html, body {
   color: #2f5ea7;
 }
 
-/* CONVERSATION COLUMN => fills remaining width */
+/* CONVERSATION COLUMN => fills the rest of the space */
 .conversation-column {
   flex: 1;
   overflow: hidden;
@@ -165,9 +175,11 @@ html, body {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
 }
 .btn-end-call:hover {
   background-color: #e04040;
+  transform: translateY(-2px);
 }
 
 /* INCOMING CALL MODAL */
@@ -191,6 +203,62 @@ html, body {
   color: #4a90e2;
   font-weight: 600;
 }
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.3s ease;
+}
+.tip-modal-description {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* Tip Presets */
+.tip-presets {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1.5rem;
+}
+.tip-preset-btn {
+  background-color: #f1f3f5;
+  border: 2px solid #4a90e2;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: #4a90e2;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+}
+.tip-preset-btn:hover {
+  background-color: #e4e6e8;
+  transform: translateY(-2px);
+}
+
+.tip-preset-btn.active {
+  background-color: #4a90e2;
+  color: #fff;
+}
+/* Input Group */
+.tip-input-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.tip-input-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 0.3rem;
+}
+
+.modal-close-btn:hover {
+  color: #333;
+}
 .preview-cam {
   margin: 1rem 0;
 }
@@ -209,26 +277,28 @@ html, body {
 .accept-call-btn {
   background-color: #4a90e2;
   color: #fff;
+  transition: background 0.2s, transform 0.2s;
 }
 .accept-call-btn:hover {
   background-color: #3c7ec2;
+  transform: translateY(-2px);
 }
 .decline-call-btn {
   background-color: #ff4c4c;
   color: #fff;
+  transition: background 0.2s, transform 0.2s;
 }
 .decline-call-btn:hover {
   background-color: #e04040;
+  transform: translateY(-2px);
 }
 
-/* MESSAGE DISPLAY + BUBBLES */
+/* MESSAGE DISPLAY */
 .message-display {
   flex: 1;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: none;
-  border-radius: 0;
   padding: 0.8rem;
   overflow-y: auto;
   margin: 0;
@@ -248,7 +318,7 @@ html, body {
   color: #777;
 }
 
-/* INDIVIDUAL MESSAGE BUBBLES */
+/* MESSAGE BUBBLES */
 .bubble {
   max-width: 60%;
   margin: 3px 0;
@@ -280,7 +350,7 @@ html, body {
   margin-bottom: 4px;
 }
 
-/* Make media messages have no colored background */
+/* Media bubble => no colored background */
 .media-bubble {
   background: none !important;
   box-shadow: none !important;
@@ -295,13 +365,11 @@ html, body {
   margin-bottom: 0 !important;
 }
 
-/* SEND BAR => part of the same bubble as the conversation */
+/* SEND BAR */
 .send-bar {
-  border: none;
-  border-radius: 0;
+  border-top: 1px solid #ccc;
   margin: 0;
   padding: 0.8rem;
-  border-top: 1px solid #ccc;
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -321,7 +389,7 @@ html, body {
   padding: 10px 14px;
   font-size: 1rem;
   color: #333;
-  box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0px 1px 3px rgba(0,0,0,0.1);
 }
 .input-message::placeholder {
   font-size: 1rem;
@@ -360,7 +428,7 @@ html, body {
   align-items: center;
   justify-content: center;
   transition: background 0.2s, transform 0.2s;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .icon-btn:hover {
   background-color: #e4e6e8;
@@ -373,85 +441,150 @@ html, body {
   stroke: #4a90e2;
 }
 
-/* TIP MODAL OVERLAY */
 .tip-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.65);
+  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
-
 .tip-modal {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1.5rem;
-  width: 280px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  animation: fadeInUp 0.3s ease;
+  background: linear-gradient(135deg, #ffffff, #f9f9f9);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 400px;
+  max-width: 95%;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: slideUp 0.4s ease;
 }
-
+/* Modal Heading & Description */
 .tip-modal h2 {
-  font-size: 1.2rem;
-  color: #4a90e2;
-  margin-bottom: 0.4rem;
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.5rem;
 }
 .tip-modal p {
-  margin-bottom: 0.6rem;
-  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
   color: #666;
+  font-size: 1rem;
 }
 .tip-amount-input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem;
+  font-size: 1.1rem;
   border: 2px solid #4a90e2;
-  border-radius: 4px;
-  font-size: 1rem;
-  margin-bottom: 0.8rem;
-  text-align: center;
+  border-radius: 8px;
+  outline: none;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
 }
 
+.tip-amount-input:focus {
+  border-color: #3c7ec2;
+  box-shadow: 0 0 10px rgba(72, 144, 226, 0.5);
+}
+.tip-slider-group {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tip-slider {
+  flex: 1;
+  
+  height: 8px;
+  border-radius: 4px;
+  background: #ddd;
+  outline: none;
+  transition: background 0.3s;
+}
+
+.tip-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4a90e2;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.tip-summary {
+  margin-bottom: 1.5rem;
+  text-align: left;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.tip-summary p {
+  margin: 0.3rem 0;
+}
+.tip-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.tip-slider-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #4a90e2;
+}
 .tip-modal-buttons {
   display: flex;
-  gap: 0.5rem;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.btn-confirm-tip,
+.btn-cancel-tip {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+}
+.tip-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tip-modal-header h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
 }
 .btn-confirm-tip {
   background-color: #4a90e2;
   color: #fff;
-  border: none;
-  padding: 0.5rem 0.9rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s, transform 0.2s;
 }
-
 
 .btn-confirm-tip:hover {
   background-color: #3c7ec2;
-  transform: translateY(-2px);
 }
 .btn-cancel-tip {
-  background-color: #ccc;
-  border: none;
+  background-color: #ddd;
   color: #333;
-  padding: 0.5rem 0.9rem;
-  border-radius: 4px;
-  cursor: pointer;
 }
 .btn-cancel-tip:hover {
-  background-color: #bbb;
-  transform: translateY(-2px);
+  background-color: #ccc;
 }
 
-/* TIP SUCCESS POPUP => bigger “wow” effect */
+/* TIP SUCCESS POPUP */
 .tip-success-popup {
   position: fixed;
   top: 20%;
@@ -470,7 +603,7 @@ html, body {
 }
 .tip-success-popup h3 {
   font-size: 1.2rem;
-  color: #ff6f47; /* bright orange */
+  color: #ff6f47;
   margin-bottom: 0.4rem;
 }
 .dopamine-msg {
@@ -483,7 +616,7 @@ html, body {
   animation: confettiWiggle 1s ease infinite alternate;
 }
 
-/* Keyframes for animations */
+/* KEYFRAMES */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -513,6 +646,15 @@ html, body {
   }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
@@ -520,7 +662,6 @@ html, body {
     flex-direction: column;
     padding: 0.5rem;
   }
-  
   .chats-column {
     width: 100%;
     order: 2;
