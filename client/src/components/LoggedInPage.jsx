@@ -3,6 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import './LoggedInPage.css';
 import './Sidebar.css';
 import { io } from 'socket.io-client';
+import EmojiPicker from 'emoji-picker-react';
+import GiphyPicker from 'react-giphy-picker';
+
+
+
 
 function getFullMediaUrl(url) {
   if (!url) return '';
@@ -16,9 +21,47 @@ function LoggedInPage() {
   // Main user
   const [user, setUser] = useState(null);
 
+  // Controls the deposit modal visibility
+  const [showDepositModal, setShowDepositModal] = useState(false);
+
+  const funnyGifs = [
+    'https://media.giphy.com/media/26xBwdIuRJiAIqHwA/giphy.gif',
+    'https://media.giphy.com/media/l0HlOvJ7yaacpuSas/giphy.gif',
+    'https://media.giphy.com/media/3ov9jNziFTMfzSumAw/giphy.gif',
+    'https://media.giphy.com/media/3o7abAHdYvZdBNnGZq/giphy.gif',
+    'https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif',
+    'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif',
+    'https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif',
+    'https://media.giphy.com/media/3oEjHP8ELRNNlnlLGM/giphy.gif',
+    'https://media.giphy.com/media/3o7TKr3AU9MZ2kEQGI/giphy.gif',
+    'https://media.giphy.com/media/l4Jz3a8jO92crUlWM/giphy.gif'
+  ];
+  
+  
+
+  // Holds the user-entered deposit amount
+  const [depositAmount, setDepositAmount] = useState('');
+
+  // Optional: A deposit note for the transaction
+  const [depositNote, setDepositNote] = useState('');
+
+  // To simulate an API call processing state
+  const [depositProcessing, setDepositProcessing] = useState(false);
+  const [tweetMedia, setTweetMedia] = useState(null);
+
+
+  // For error or success messages
+  const [depositError, setDepositError] = useState('');
+  const [depositSuccess, setDepositSuccess] = useState('');
+
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+
   // Notifications
   const [notifications, setNotifications] = useState([]);
   const [showNotifsPanel, setShowNotifsPanel] = useState(false);
+
+  const videoRef = useRef(null);
 
   // Socket ref
   const socketRef = useRef(null);
@@ -32,6 +75,7 @@ function LoggedInPage() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
   const [filterType, setFilterType] = useState('all');
+  const [admins, setAdmins] = useState([]);
 
   // Video comments
   const [openCommentsVideo, setOpenCommentsVideo] = useState(null);
@@ -116,6 +160,22 @@ function LoggedInPage() {
     if (isIphone) setSidebarsCollapsed(true);
   }, [navigate]);
 
+  useEffect(() => {
+    fetch('http://localhost:5000/api/auth/all-admins', {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === 'success') {
+          setAdmins(data.admins);
+        } else {
+          console.error(data.message);
+        }
+      })
+      .catch((err) => console.error('Error fetching admins:', err));
+  }, []);
+  
+
   // 2) Once user known => fetch notifications + connect socket => then fetch tweets
   useEffect(() => {
     if (!user) return;
@@ -150,6 +210,8 @@ function LoggedInPage() {
     if (user) fetchTweets();
   }, [user]);
 
+  
+
   // DM scroll to bottom
   useEffect(() => {
     if (dmPreviewRef.current) {
@@ -174,25 +236,92 @@ function LoggedInPage() {
     }
   }
 
+  function handleDepositSubmit() {
+    setDepositError('');
+    setDepositSuccess('');
+  
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setDepositError('Please enter a valid amount.');
+      return;
+    }
+    
+    setDepositProcessing(true);
+    
+    // OPTIONAL: Replace this with your API call.
+    setTimeout(() => {
+      const updatedBalance = (user.balance || 0) + amount;
+      setUser({ ...user, balance: updatedBalance });
+      
+      setDepositSuccess(`Successfully deposited $${amount.toFixed(2)}!`);
+      
+      // Clear input fields and disable processing.
+      setDepositAmount('');
+      setDepositNote('');
+      setDepositProcessing(false);
+      
+      // Auto-close the modal after a short delay.
+      setTimeout(() => {
+        setDepositSuccess('');
+        setShowDepositModal(false);
+      }, 1500);
+      
+    }, 1500);
+  }
+  
+  
+  function togglePlayPause() {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+    } else {
+      videoRef.current.pause();
+    }
+  }
+  
+  // 3) Rewind or skip a certain # of seconds
+  function skipSeconds(amount) {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime += amount;
+  }
+
   async function handleTweetSubmit() {
-    if (!tweetText.trim() && !selectedFile) {
+    // Only proceed if there is content, a selected file, or a GIF
+    if (!tweetText.trim() && !selectedFile && !tweetMedia) {
       return;
     }
     try {
       const formData = new FormData();
-      formData.append('content', tweetText.trim());
-      if (selectedFile) formData.append('mediaFile', selectedFile);
-
+      // Ensure content is never empty (for GIF-only tweets, send a single space)
+      formData.append('content', tweetText.trim() || ' ');
+      
+      if (selectedFile) {
+        formData.append('mediaFile', selectedFile);
+      }
+      
+      // NEW: Convert the GIF URL into a file if a GIF was selected.
+      if (tweetMedia) {
+        const response = await fetch(tweetMedia);
+        const blob = await response.blob();
+        const file = new File([blob], "gif.gif", { type: blob.type });
+        formData.append('mediaFile', file);
+      }
+    
       const res = await fetch('http://localhost:5000/api/twitter/posts', {
         method: 'POST',
         credentials: 'include',
         body: formData,
       });
+    
       const data = await res.json();
       if (res.ok && data.status === 'success') {
-        setPosts((prev) => [data.tweet, ...prev]);
+        // Merge the logged-in user as the author
+        const newTweet = { ...data.tweet, author: { ...user } };
+        setPosts((prev) => [newTweet, ...prev]);
+        // Clear out the fields after submission.
         setTweetText('');
         setSelectedFile(null);
+        setTweetMedia(null);
       } else {
         alert(data.message || 'Could not create tweet.');
       }
@@ -201,7 +330,7 @@ function LoggedInPage() {
       alert('Server error creating tweet.');
     }
   }
-
+  
   async function handleLikeTweet(tweetId) {
     try {
       const res = await fetch(`http://localhost:5000/api/twitter/${tweetId}/like`, {
@@ -210,7 +339,14 @@ function LoggedInPage() {
       });
       const data = await res.json();
       if (res.ok && data.status === 'success') {
-        setPosts((prev) => prev.map((p) => (p._id === tweetId ? data.tweet : p)));
+        if (res.ok && data.status === 'success') {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p._id === tweetId ? { ...data.tweet, author: p.author } : p
+            )
+          );
+        }
+        
       } else {
         alert(data.message || 'Error liking tweet.');
       }
@@ -227,6 +363,18 @@ function LoggedInPage() {
     }
   }
 
+
+  function handleAddEmoji() {
+    // Toggle the emoji picker modal
+    setShowEmojiPicker(true);
+  }
+  
+  function handleAddGif() {
+    // Toggle the GIF picker modal
+    setShowGifPicker(true);
+  }
+  
+  
   async function handleCommentSubmitTweet(tweetId) {
     if (!newCommentText.trim()) return;
     try {
@@ -792,12 +940,12 @@ function LoggedInPage() {
             className="top-bar"
             style={{ marginBottom: '0.8rem', borderBottom: '1px solid #ccc' }}
           >
-            <h1 className="home-title">HOME</h1>
+            <h1 className="home-title">FanPOV</h1>
             <div className="top-bar-right">
               <div
                 className="wallet-balance"
-                onClick={() => navigate('/settings')}
-                title="Go to Wallet/Settings"
+                onClick={() => setShowDepositModal(true)}
+                title="Deposit Funds"
               >
                 Balance: ${user.balance || 0}
               </div>
@@ -816,6 +964,7 @@ function LoggedInPage() {
             </div>
           )}
 
+          
           <div className="no-videos-yet">
             <p>No videos yet. Check back later!</p>
           </div>
@@ -826,6 +975,7 @@ function LoggedInPage() {
             sidebarsCollapsed ? 'collapsed' : ''
           }`}
         >
+        
           <h3 className="suggested-heading simpler-suggested-title">
             Suggested Creators
           </h3>
@@ -1039,7 +1189,7 @@ function LoggedInPage() {
             className="top-bar"
             style={{ marginBottom: '0.8rem', borderBottom: '1px solid #ccc' }}
           >
-            <h1 className="home-title">HOME</h1>
+            <h1 className="home-title">FanPOV</h1>
             <div className="top-bar-right">
               <button className="icon-btn" onClick={fetchVideos} title="Refresh Feed">
                 <span className="icon icon-refresh"></span>
@@ -1049,7 +1199,7 @@ function LoggedInPage() {
               </button>
               <div
                 className="wallet-balance"
-                onClick={() => navigate('/settings')}
+                onClick={() => setShowDepositModal(true)}
                 title="Go to Wallet/Settings"
               >
                 Balance: ${user.balance || 0}
@@ -1142,37 +1292,53 @@ function LoggedInPage() {
             </div>
           )}
 
-          <div
-            className="single-video-full"
-            onWheel={(e) => {
-              if (e.target.closest('.comments-panel')) return;
-              if (e.deltaY > 0) {
-                setCurrentVideoIndex((p) =>
-                  Math.min(p + 1, filteredVideos().length - 1)
-                );
-                setOpenCommentsVideo(null);
-              } else if (e.deltaY < 0) {
-                setCurrentVideoIndex((p) => Math.max(p - 1, 0));
-                setOpenCommentsVideo(null);
-              }
-            }}
-          >
-            <div className="video-container" key={currentVideo._id}>
-              <div className="video-frame">
-                {currentVideo.isPhoto ? (
-                  <img
-                    src={finalMediaUrl}
-                    alt={currentVideo.title}
-                    className="video-player"
-                  />
-                ) : (
-                  <video
-                    src={finalMediaUrl}
-                    controls
-                    className="video-player"
-                  />
-                )}
-                <div className="video-actions">
+      <div
+        className="single-video-full"
+        onWheel={(e) => {
+          if (!e.target.closest('.video-frame')) return;
+
+          const threshold = 0; // or 10, or 15—adjust to taste
+
+          if (e.deltaY > threshold) {
+            setCurrentVideoIndex((prev) => Math.min(prev + 1, videosToDisplay.length - 1));
+            setOpenCommentsVideo(null);
+          } else if (e.deltaY < -threshold) {
+            setCurrentVideoIndex((prev) => Math.max(prev - 1, 0));
+            setOpenCommentsVideo(null);
+          }
+        }}
+      >
+
+        {/* This container uses the current video's _id as the key, so it can "fade in" */}
+        <div key={currentVideo._id} className="video-container fade-in">
+          <div className="video-frame">
+            {currentVideo.isPhoto ? (
+              <img
+                src={finalMediaUrl}
+                alt={currentVideo.title}
+                className="video-player"
+              />
+            ) : (
+              <video
+                src={finalMediaUrl}
+                autoPlay
+                loop
+                muted
+                className="video-player"
+                onClick={togglePlayPause}
+              />
+            )}
+          </div>
+
+            {/* NEW translucent overlay (caption + action buttons) */}
+            <div className="video-footer-overlay">
+              <div className="footer-top-row">
+                <div className="video-caption">{currentVideo.title}</div>
+              </div>
+
+              <div className="footer-bottom-row">
+                {/* Left group (like, comment, share) */}
+                <div className="footer-left-actions">
                   <button
                     className={`icon-btn ${isVideoLiked ? 'liked' : ''}`}
                     onClick={() => handleLike(currentVideo._id)}
@@ -1183,6 +1349,7 @@ function LoggedInPage() {
                       <span className="like-count">{currentVideo.likes.length}</span>
                     )}
                   </button>
+
                   <button
                     className="icon-btn"
                     onClick={() => handleOpenComments(currentVideo._id)}
@@ -1190,6 +1357,7 @@ function LoggedInPage() {
                   >
                     <span className="icon icon-comment"></span>
                   </button>
+
                   <button
                     className="icon-btn"
                     onClick={() => handleShare(finalMediaUrl)}
@@ -1201,7 +1369,28 @@ function LoggedInPage() {
                     )}
                   </button>
                 </div>
+
+                {/* Right group (rewind / skip) */}
+                <div className="footer-right-actions">
+                  <button
+                    className="icon-btn"
+                    onClick={() => skipSeconds(-10)}
+                    title="Rewind 10s"
+                  >
+                    <span className="icon icon-rewind"></span>
+                  </button>
+
+                  <button
+                    className="icon-btn"
+                    onClick={() => skipSeconds(10)}
+                    title="Skip 10s"
+                  >
+                    <span className="icon icon-forward"></span>
+                  </button>
+                </div>
               </div>
+            </div>
+
 
               <div className="uploader-row">
                 <Link
@@ -1227,9 +1416,7 @@ function LoggedInPage() {
                 </Link>
               </div>
 
-              {openCommentsVideo !== currentVideo._id && (
-                <div className="video-caption">{currentVideo.title}</div>
-              )}
+              
 
               {openCommentsVideo === currentVideo._id && (
                 <div className="comments-panel new-comments-panel">
@@ -1584,15 +1771,15 @@ function LoggedInPage() {
             className="top-bar"
             style={{ marginBottom: '0.8rem', borderBottom: '1px solid #ccc' }}
           >
-            <h1 className="home-title">HOME</h1>
+            <h1 className="home-title">FanPOV</h1>
             <div className="top-bar-right">
               <button className="icon-btn" onClick={toggleSearchBar} title="Search">
                 <span className="icon icon-search"></span>
               </button>
               <div
                 className="wallet-balance"
-                onClick={() => navigate('/settings')}
-                title="Go to Wallet/Settings"
+                onClick={() => setShowDepositModal(true)}
+                title="Deposit Funds"
               >
                 Balance: ${user.balance || 0}
               </div>
@@ -1660,15 +1847,58 @@ function LoggedInPage() {
 
           {/* The TWEET BOX (compose) */}
           <div className="twitter-feed">
-            <div className="tweet-box-card">
+          <div className="tweet-box">
+              <div className="tweet-box-header">
+                {user.profilePic && (
+                  <img
+                    src={getFullMediaUrl(user.profilePic)}
+                    alt="Your avatar"
+                    className="tweet-user-avatar"
+                  />
+                )}
+                <h2 className="tweet-box-title">What's happening?</h2>
+              </div>
               <textarea
-                placeholder="What's happening?"
-                className="tweet-textarea"
+                className="tweet-input"
+                placeholder="Share your thoughts..."
                 value={tweetText}
                 onChange={(e) => setTweetText(e.target.value)}
-              />
-              <div className="tweet-footer">
-                <div className="tweet-media-btns">
+                maxLength={280}
+              ></textarea>
+
+              {tweetMedia && (
+                <div className="tweet-media-preview">
+                  <img
+                    src={tweetMedia}
+                    alt="Selected GIF"
+                    className="tweet-media-image"
+                  />
+                  <button
+                    className="remove-media-btn"
+                    onClick={() => setTweetMedia(null)}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
+              {selectedFile && (
+                <div className="tweet-media-preview">
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    alt="Media preview"
+                    className="tweet-media-image"
+                  />
+                  <button
+                    className="remove-media-btn"
+                    onClick={() => setSelectedFile(null)}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              <div className="tweet-actions-bar">
+                <div className="tweet-media-buttons">
                   <input
                     type="file"
                     accept="image/*,video/*"
@@ -1679,23 +1909,30 @@ function LoggedInPage() {
                   <button
                     className="tweet-media-btn"
                     title="Upload Photo/Video"
-                    onClick={() => document.getElementById('tweet-media-input').click()}
+                    onClick={() =>
+                      document.getElementById('tweet-media-input').click()
+                    }
                   >
                     <span className="icon icon-photo"></span>
                   </button>
-                  <button className="tweet-media-btn" title="Add a GIF">
+                  <button className="tweet-media-btn" title="Add GIF" onClick={handleAddGif}>
                     <span className="icon icon-gif"></span>
                   </button>
+                  <button className="tweet-media-btn" title="Add Emoji" onClick={handleAddEmoji}>
+                    <span className="icon icon-emoji"></span>
+                  </button>
                 </div>
-                <button
-                  onClick={handleTweetSubmit}
-                  className="tweet-post-btn"
-                  title="Post Tweet"
-                >
-                  Tweet
-                </button>
+                <div className="tweet-controls">
+                  <span className="tweet-char-count">
+                    {tweetText.length}/280
+                  </span>
+                  <button className="tweet-post-btn" onClick={handleTweetSubmit}>
+                    Tweet
+                  </button>
+                </div>
               </div>
             </div>
+
 
             {/* The LIST of TWEETS */}
             <div className="posts-feed">
@@ -1704,12 +1941,11 @@ function LoggedInPage() {
               ) : (
                 posts.map((post) => {
                   const isLiked = post.likes?.some((uid) => uid.toString() === user.id);
-                  const canDelete =
-                    post.author?._id === user.id || user.role === 'admin';
+                  const canDelete = post.author?._id === user.id || user.role === 'admin';
 
                   return (
                     <div key={post._id} className="post-card">
-                      {/* TWEET HEADER => avatar, username, and time */}
+                      {/* Updated header with nicer styling */}
                       <div className="tweet-header">
                         {post.author?.profilePic && (
                           <img
@@ -1731,99 +1967,134 @@ function LoggedInPage() {
                         </div>
                       </div>
 
-                      {/* TWEET BODY => text content */}
+                      {/* Post content */}
                       <div className="tweet-body">{post.content}</div>
-
-                      {/* If there's a mediaUrl => show image/video */}
                       {post.mediaUrl && (
                         <div className="tweet-media">
                           <img
                             src={getFullMediaUrl(post.mediaUrl)}
                             alt="post media"
                             style={{
-                              maxWidth: '100%',
-                              marginTop: '0.5rem',
+                              width: '50%',        // use a larger percentage or a fixed value
+                              height: 'auto',       // maintain aspect ratio
+                              margin: '0.5rem auto', // center the image horizontally
                               borderRadius: '6px',
                             }}
                           />
                         </div>
                       )}
 
-                      {/* ACTIONS ROW (like, comment, share, delete) */}
+                      {/* Action buttons now mimic the video feed buttons */}
                       <div className="tweet-actions">
                         <button
-                          className={`tweet-action-btn ${isLiked ? 'liked' : ''}`}
+                          className={`icon-btn ${isLiked ? 'liked' : ''}`}
                           onClick={() => handleLikeTweet(post._id)}
+                          title="Like"
                         >
                           <span className="icon icon-heart"></span>
                           {post.likes?.length > 0 && (
-                            <span className="count-badge">{post.likes.length}</span>
+                            <span className="like-count">{post.likes.length}</span>
                           )}
                         </button>
-
                         <button
-                          className="tweet-action-btn"
+                          className="icon-btn"
                           onClick={() => toggleTweetComments(post._id)}
+                          title="Comments"
                         >
                           <span className="icon icon-comment"></span>
-                          {post.comments?.length > 0 && (
-                            <span className="count-badge">
-                              {post.comments.length}
-                            </span>
-                          )}
                         </button>
-
                         <button
-                          className="tweet-action-btn"
+                          className="icon-btn"
                           onClick={() => handleShareTweet(post._id)}
+                          title="Share"
                         >
                           <span className="icon icon-share"></span>
-                          {/* If you were tracking share counts, you'd display them: */}
-                          {/* {post.shareCount && <span className="count-badge">{post.shareCount}</span>} */}
                         </button>
-
                         {canDelete && (
                           <button
-                            className="tweet-action-btn delete-btn"
+                            className="icon-btn delete-btn"
                             onClick={() => handleDeleteTweet(post._id)}
+                            title="Delete"
                           >
                             <span className="icon icon-close"></span>
                           </button>
                         )}
                       </div>
 
-                      {/* COMMENTS SECTION (toggles open/closed) */}
+                      {/* Optional: comments panel (unchanged aside from spacing) */}
                       {showTweetComments === post._id && (
-                        <div className="tweet-comments-panel" style={{ marginTop: '0.5rem' }}>
-                          {(post.comments || []).map((c) => (
-                            <div key={c._id} className="tweet-comment">
-                              <strong>{c.user?.username || 'Anon'}</strong>: {c.content}
-                            </div>
-                          ))}
+                        <div className="tweet-comments-panel">
 
-                          {/* Add a new comment */}
-                          <div style={{ display: 'flex', marginTop: '0.4rem' }}>
+                          <div className="comments-header">
+                            <h3>
+                              Comments <span className="comment-count">({post.comments.length})</span>
+                            </h3>
+                          </div>
+
+                          <div className="comments-content">
+                            {post.comments.map((comment) => {
+                              const commenter = comment.user || {};
+                              return (
+                                <div key={comment._id} className="comment-card">
+                                  <div className="comment-avatar">
+                                    <img
+                                      src={commenter.profilePic ? getFullMediaUrl(commenter.profilePic) : '/default-avatar.png'}
+                                      alt={commenter.username || 'Anon'}
+                                      onError={(e) => { e.target.src = '/default-avatar.png'; }}
+                                    />
+                                  </div>
+                                  <div className="comment-body">
+                                    <div className="comment-meta">
+                                      <span className="comment-author">
+                                        {commenter.username || 'Anon'}
+                                      </span>
+                                    </div>
+                                    <div className="comment-text">{comment.content}</div>
+                                    <div className="comment-actions">
+                                      <button className="comment-like-btn">
+                                        <span className="icon icon-heart"></span>
+                                        {comment.likes?.length > 0 && (
+                                          <span className="like-count">{comment.likes.length}</span>
+                                        )}
+                                      </button>
+                                      <button
+                                        className="comment-reply-btn"
+                                        onClick={() => handleReply(comment._id)}
+                                      >
+                                        Reply
+                                      </button>
+                                    </div>
+                                    {/* Nested replies go here, if any */}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Comment input */}
+                          <div className="comment-input-section">
                             <input
                               type="text"
                               value={newCommentText}
                               onChange={(e) => setNewCommentText(e.target.value)}
                               placeholder="Write a comment..."
-                              style={{ flex: 1 }}
                             />
                             <button
+                              className="post-comment-btn"
                               onClick={() => handleCommentSubmitTweet(post._id)}
-                              style={{ marginLeft: '0.5rem' }}
                             >
                               Post
                             </button>
                           </div>
                         </div>
                       )}
+
                     </div>
                   );
                 })
               )}
             </div>
+
           </div>
         </main>
 
@@ -1897,6 +2168,119 @@ function LoggedInPage() {
         {followMessage && (
           <div className="follow-message-popup">{followMessage}</div>
         )}
+
+        {showDepositModal && (
+          <div className="modal-overlay" onClick={() => { if(!depositProcessing) setShowDepositModal(false); }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close-btn" onClick={() => { if(!depositProcessing) setShowDepositModal(false); }}>
+                &times;
+              </button>
+              <h3>Deposit Funds</h3>
+              
+              {/* Preset Amount Buttons */}
+              <div className="preset-amounts">
+                {[5, 10, 20, 50, 100].map((amt) => (
+                  <button
+                    key={amt}
+                    className="preset-btn"
+                    onClick={() => setDepositAmount(amt.toString())}
+                  >
+                    ${amt}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Deposit Amount Input */}
+              <input
+                type="number"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                placeholder="Enter deposit amount"
+                disabled={depositProcessing}
+              />
+              
+              {/* Optional Deposit Note */}
+              <textarea
+                value={depositNote}
+                onChange={(e) => setDepositNote(e.target.value)}
+                placeholder="Add a note (optional)"
+                disabled={depositProcessing}
+              />
+              
+              {/* Display error or success message */}
+              {depositError && <p className="deposit-error">{depositError}</p>}
+              {depositSuccess && <p className="deposit-success">{depositSuccess}</p>}
+              
+              <div className="modal-actions">
+                <button
+                  onClick={() => { if(!depositProcessing) setShowDepositModal(false); }}
+                  disabled={depositProcessing}
+                >
+                  Cancel
+                </button>
+                <button onClick={handleDepositSubmit} disabled={depositProcessing}>
+                  {depositProcessing ? (
+                    <span className="spinner"></span>
+                  ) : (
+                    'Confirm Deposit'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEmojiPicker && (
+          <div
+            className="modal-overlay"
+            onClick={() => setShowEmojiPicker(false)}
+          >
+            <div
+              className="picker-container"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EmojiPicker
+                onEmojiClick={(emojiData) => {
+                  // Log it to confirm the shape
+                  console.log('Selected Emoji Data:', emojiData);
+                  setTweetText((prev) => prev + emojiData.emoji);
+                  setShowEmojiPicker(false);
+                }}
+              />
+
+
+
+            </div>
+          </div>
+        )}
+
+      {showGifPicker && (
+        <div className="modal-overlay" onClick={() => setShowGifPicker(false)}>
+          <div className="picker-container" onClick={(e) => e.stopPropagation()}>
+            <h3>Select a Funny GIF</h3>
+            <div className="gif-picker">
+              {funnyGifs.map((gifUrl, index) => (
+                <img
+                  key={index}
+                  src={gifUrl}
+                  alt="Funny gif"
+                  onClick={() => {
+                    setTweetMedia(gifUrl);    // store in separate state
+                    setShowGifPicker(false);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+    
+
+
+
+
       </div>
     );
   }
