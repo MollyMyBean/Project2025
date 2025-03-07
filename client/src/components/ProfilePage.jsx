@@ -330,7 +330,7 @@ function ProfilePage() {
             <p className="hero-bio">
               {adminInfo.bio || 'Some example bio text for the admin.'}
             </p>
-            <button className="hero-showmore-btn">Show More</button>
+            
           </div>
           <div className="hero-cta">
             <div className="offer-banner">
@@ -519,12 +519,7 @@ function ProfilePage() {
             );
           })}
         </div>
-        <div className="fun-fact-block">
-          <h4>Fun Fact</h4>
-          <p>
-            Did you know you can hover over a video’s actions to see what they do?
-          </p>
-        </div>
+        
       </aside>
 
       {/* The story overlay => if showStory is true & there's a storyUrl */}
