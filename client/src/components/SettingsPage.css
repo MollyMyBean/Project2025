@@ -16,7 +16,7 @@ html, body {
   overflow: hidden;
 }
 
-/* MAIN PAGE WRAPPER */
+/* MAIN WRAPPER */
 .settings-page {
   display: flex;
   width: 100%;
@@ -28,9 +28,11 @@ html, body {
 }
 
 
+
+/* RIGHT SIDE */
 .settings-right.bubble-section {
   flex: 1;
-  margin: 0.5rem 0.3rem; 
+  margin: 0.5rem 0.3rem;
   border: 1px solid #d3d3d3;
   border-radius: 8px;
   background: #fff;
@@ -46,48 +48,70 @@ html, body {
   display: flex;
   gap: 0.6rem;
   margin-bottom: 1rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
 }
 .settings-tab-btn {
-  background: #f5f5f5;
-  border: 1px solid #ccc;
-  color: #4a90e2;
-  padding: 6px 12px;
-  border-radius: 4px;
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #666;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
 }
 .settings-tab-btn:hover {
-  background-color: #e0e0e0;
+  color: #333;
+  background-color: #f2f2f2;
 }
 .settings-tab-btn.active {
-  background-color: #4a90e2;
-  color: #fff;
-  border-color: #3983d9;
+  border-bottom: 2px solid #4a90e2;
+  color: #4a90e2;
+  font-weight: 600;
+  background-color: #f0f8ff; /* light highlight */
 }
 
-/* SUCCESS/ERROR MESSAGE */
-.settings-message {
-  color: #333;
+/* ALERT MESSAGES */
+.settings-alert {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 0.8rem;
-  background: #e3f2fd;
-  border: 1px solid #90caf9;
-  padding: 6px 8px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.settings-alert.success {
+  background-color: #e3f8e1;
+  border: 1px solid #8bd48e;
+  color: #2e7d32;
+}
+.settings-alert.error {
+  background-color: #fdecea;
+  border: 1px solid #f5c6cb;
+  color: #c0392b;
+}
+.alert-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  margin-left: 1rem;
 }
 
-/* FORMS => center them a bit */
-.settings-form-container {
-  flex: 1;
+/* TAB CONTENT CONTAINER */
+.settings-tab-content {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 1rem;
 }
-.settings-form {
-  width: 100%;
-  max-width: 460px;
+
+/* CARD */
+.settings-card {
   background-color: #fafafa;
   border: 1px solid #ddd;
   padding: 1rem;
@@ -95,10 +119,53 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  color: #333;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.card-title {
+  font-size: 1.1rem;
+  color: #4a90e2;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.card-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.5rem;
 }
 
-/* FORM GROUPS */
+/* DANGER CARD */
+.danger-card {
+  background-color: #fff5f5;
+  border: 1px solid #ffcdd2;
+}
+.danger-title {
+  color: #c0392b;
+}
+.danger-text {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  color: #555;
+}
+.btn-delete-account {
+  background-color: #e74c3c;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-delete-account:hover {
+  background-color: #cf3c2e;
+}
+
+/* FORMS */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 .form-group {
   display: flex;
   flex-direction: column;
@@ -123,23 +190,15 @@ html, body {
   outline: none;
 }
 
-/* profile pic preview */
-.profile-pic-preview img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #4a90e2;
-  margin-top: 0.3rem;
-}
-
-/* checkboxes => side by side */
+/* CHECKBOXES */
 .checkbox-group {
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
   margin-left: 1rem;
 }
+
+/* NOTES */
 .tab-note {
   font-size: 0.8rem;
   color: #666;
@@ -161,26 +220,6 @@ html, body {
 }
 .btn-save:hover {
   background-color: #3c7ec2;
-}
-
-/* UNIVERSAL INPUT VISIBILITY */
-input, textarea, select {
-  color: #333;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  padding: 0.6rem;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-input:focus, textarea:focus, select:focus {
-  border-color: #4a90e2;
-  box-shadow: 0 0 5px rgba(72,144,226,0.5);
-  outline: none;
-}
-input::placeholder, textarea::placeholder {
-  color: #777;
-  font-size: 0.85rem;
 }
 
 /* RESPONSIVE */
@@ -205,18 +244,18 @@ input::placeholder, textarea::placeholder {
     font-size: 0.8rem;
     padding: 4px 8px;
   }
+  .card-title {
+    font-size: 1rem;
+  }
   .form-label {
     font-size: 0.85rem;
   }
   .form-input {
     font-size: 0.8rem;
   }
-  .btn-save {
+  .btn-save,
+  .btn-delete-account {
     font-size: 0.8rem;
     padding: 6px 10px;
-  }
-  .profile-pic-preview img {
-    width: 50px;
-    height: 50px;
   }
 }
