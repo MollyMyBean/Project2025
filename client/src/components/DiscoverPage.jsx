@@ -2,13 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './DiscoverPage.css';
 
+// Helper to make absolute URLs
 function getFullMediaUrl(url) {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
   return `http://localhost:5000${url}`;
 }
 
-const defaultAvatar = '';
+const defaultAvatar = '/images/default.png'; // Make sure this exists in public/images
 
 function DiscoverPage() {
   const navigate = useNavigate();
@@ -18,10 +19,17 @@ function DiscoverPage() {
   const [location, setLocation] = useState('');
   const [activeTab, setActiveTab] = useState('swipe');
 
+  // For the distance filter
+  const [distanceFilter, setDistanceFilter] = useState(50);
+
   // Swiping deck
-  const [admins, setAdmins] = useState([]);
+  const [allAdmins, setAllAdmins] = useState([]); // store unfiltered list
+  const [admins, setAdmins] = useState([]); // store currently filtered list
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+
+  // Toast state
+  const [toast, setToast] = useState({ text: '', type: '' }); // { text: '', type: 'success' | 'error' | 'info' }
+  const toastTimeoutRef = useRef(null);
 
   // Card exit animations
   const [cardExit, setCardExit] = useState(false);
@@ -29,24 +37,27 @@ function DiscoverPage() {
   const cardRef = useRef(null);
   const [photoIndex, setPhotoIndex] = useState(0);
 
+  // Overlays for “LIKE” / “NOPE”
+  const [showLikeOverlay, setShowLikeOverlay] = useState(false);
+  const [showNopeOverlay, setShowNopeOverlay] = useState(false);
+
   // Matches
   const [matches, setMatches] = useState([]);
   const [likedMe, setLikedMe] = useState([]);
 
-  // Force the first 5 swipes to be auto matches => for testing
-  // (We skip the “12h check” so you can verify the alerts always appear.)
+  // Keep track of how many swipes the user has done
   const [swipeCount, setSwipeCount] = useState(0);
-  // For demonstration, let's say after the first 5, we'll do an auto match every 5 or 6 swipes
+  // For demonstration: after the first 5 auto-matches, pick a new auto-match threshold
   const [nextAutoMatchAt, setNextAutoMatchAt] = useState(0);
 
-  // For the "Instant Match" alert pop-up
-  const [matchAlert, setMatchAlert] = useState('');
+  // For the tutorial (only shown once)
+  const [showTutorial, setShowTutorial] = useState(true);
 
   useEffect(() => {
     (async () => {
       // 1) Check session user
       const authRes = await fetch('http://localhost:5000/api/protected', {
-        credentials: 'include'
+        credentials: 'include',
       });
       if (authRes.status === 401) {
         navigate('/');
@@ -73,7 +84,8 @@ function DiscoverPage() {
         const locRes = await fetch('https://ipapi.co/json/');
         const locData = await locRes.json();
         if (locData) {
-          setLocation(`${locData.city}, ${locData.region}, ${locData.country_name}`);
+          // Show approximate location to avoid over-sharing
+          setLocation(`${locData.city}, ${locData.region}`);
         }
       } catch (err) {
         console.error('Could not fetch location:', err);
@@ -82,41 +94,79 @@ function DiscoverPage() {
 
     // Let’s start nextAutoMatchAt at e.g. 6
     setNextAutoMatchAt(6);
+
+    // Cleanup for toast
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
   }, [navigate]);
+
+  useEffect(() => {
+    // Whenever distanceFilter changes, re-filter the admins
+    filterAdminsByDistance(allAdmins, distanceFilter);
+  }, [distanceFilter, allAdmins]);
 
   async function loadDiscoverAdmins() {
     try {
       const discoverRes = await fetch('http://localhost:5000/api/auth/get-discover', {
-        credentials: 'include'
+        credentials: 'include',
       });
       const discoverData = await discoverRes.json();
       if (discoverRes.ok && discoverData.status === 'success') {
         let list = discoverData.discover || [];
-        // Filter out self, just in case
+  
+        // Flatten each doc so that admin.username = doc.adminId.username, etc.
+        list = list.map(doc => {
+          const { _id, adminId, photos } = doc;
+          return {
+            // For convenient use in your JSX:
+            _id: adminId?._id,                // The user’s actual _id
+            username: adminId?.username || '',
+            profilePic: adminId?.profilePic || '',
+            role: adminId?.role || '',
+            
+            // The discover-admin “photos” array
+            photos: photos || [],
+  
+            // Anything else you want to store:
+            docId: _id,       // The DiscoverAdmin doc’s ID if you need it
+          };
+        });
+  
+        // Filter out the current user
         if (user?.id) {
           list = list.filter((adm) => adm._id !== user.id);
         }
         // Shuffle them so each refresh => random order
         shuffleArray(list);
-
-        // Add distance & mock bio
+  
+        // Add mock distance & bio for demonstration
         const withExtras = list.map((adm) => ({
           ...adm,
           distance: Math.floor(Math.random() * 50 + 1),
-          bio: "A short bio about me, let's connect!"
+          bio: "A short bio about me. Let's connect!",
         }));
-        setAdmins(withExtras);
+        setAllAdmins(withExtras);
       }
     } catch (err) {
       console.error('Error loading discover admins:', err);
     }
+  }
+  
+
+  // Filter by distance (client-side example)
+  function filterAdminsByDistance(all, maxDistance) {
+    const filtered = all.filter((adm) => adm.distance <= maxDistance);
+    setAdmins(filtered);
   }
 
   async function loadPersistentMatches() {
     try {
       // 1) get fresh user => see which admins they liked
       const meRes = await fetch('http://localhost:5000/api/auth/me', {
-        credentials: 'include'
+        credentials: 'include',
       });
       const meData = await meRes.json();
       if (meRes.ok && meData.status === 'success') {
@@ -124,7 +174,7 @@ function DiscoverPage() {
 
         // 2) get all admins => cross-check who is liked
         const allRes = await fetch('http://localhost:5000/api/auth/all-admins', {
-          credentials: 'include'
+          credentials: 'include',
         });
         const allData = await allRes.json();
         if (allRes.ok && allData.status === 'success') {
@@ -162,7 +212,7 @@ function DiscoverPage() {
   async function pickAndStoreRandomAdmin(timestamp) {
     try {
       const res = await fetch('http://localhost:5000/api/auth/all-admins', {
-        credentials: 'include'
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok && data.status === 'success') {
@@ -204,7 +254,7 @@ function DiscoverPage() {
   function handleLogout() {
     fetch('http://localhost:5000/api/auth/logout', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
     })
       .then(() => navigate('/'))
       .catch((err) => console.error('Logout error:', err));
@@ -216,9 +266,12 @@ function DiscoverPage() {
   async function handleLike() {
     if (!currentAdmin) return;
 
+    // Show the "LIKE" overlay
+    setShowLikeOverlay(true);
+    setTimeout(() => setShowLikeOverlay(false), 500);
+
     // Decide if auto match
     if (shouldAutoMatch()) {
-      // We'll still call the backend so it's stored in likedAdmins
       await doLikeAndPersist(currentAdmin, true /* isAutoMatch */);
     } else {
       await doLikeAndPersist(currentAdmin, false);
@@ -228,7 +281,12 @@ function DiscoverPage() {
 
   function handleDislike() {
     if (!currentAdmin) return;
-    setMessage(`You disliked ${currentAdmin.username}.`);
+
+    // Show the "NOPE" overlay
+    setShowNopeOverlay(true);
+    setTimeout(() => setShowNopeOverlay(false), 500);
+
+    showToast(`You disliked ${currentAdmin.username}.`, 'info');
     triggerSwipeAnimation('left');
   }
 
@@ -242,11 +300,10 @@ function DiscoverPage() {
       const data = await res.json();
       if (res.ok) {
         if (isAutoMatch) {
-          // Show "Instant match" alert
-          setMatchAlert(`You got an instant match with ${admin.username}!`);
-          setTimeout(() => setMatchAlert(''), 2500);
+          // Show "Instant match" in a toast
+          showToast(`Instant match with ${admin.username}!`, 'success');
         } else {
-          setMessage(`You liked ${admin.username}, check your Messages!`);
+          showToast(`You liked ${admin.username}, check your Messages!`, 'success');
         }
         // Add them to "matches" if not already in
         setMatches((prev) => {
@@ -256,11 +313,11 @@ function DiscoverPage() {
           return prev;
         });
       } else {
-        setMessage(data.message || 'Error liking admin.');
+        showToast(data.message || 'Error liking admin.', 'error');
       }
     } catch (err) {
       console.error('Like admin error:', err);
-      setMessage('Server error liking admin.');
+      showToast('Server error liking admin.', 'error');
     }
   }
 
@@ -284,16 +341,13 @@ function DiscoverPage() {
   // afterwards => if swipeCount+1 === nextAutoMatchAt => also auto
   function shouldAutoMatch() {
     if (swipeCount < 5) {
-      console.log('Auto‐match because first 5 swipes');
       return true;
     }
     if (swipeCount + 1 === nextAutoMatchAt) {
-      console.log(`Auto‐match because swipeCount+1=${swipeCount + 1} equals nextAutoMatchAt`);
       // pick a new threshold => 5 or 6 from NOW
-      setNextAutoMatchAt((swipeCount + 1) + random5or6());
+      setNextAutoMatchAt(swipeCount + 1 + random5or6());
       return true;
     }
-    console.log('No auto match => normal like');
     return false;
   }
 
@@ -301,6 +355,7 @@ function DiscoverPage() {
     if (!currentAdmin) return;
     setPhotoIndex((p) => Math.max(p - 1, 0));
   }
+
   function handleNextPhoto() {
     if (!currentAdmin) return;
     const totalPhotos = currentAdmin.photos ? currentAdmin.photos.length : 0;
@@ -314,13 +369,13 @@ function DiscoverPage() {
         recipientId: adminId,
         content: '',
         mediaUrl: '',
-        mediaType: 'none'
+        mediaType: 'none',
       };
       const res = await fetch('http://localhost:5000/api/messages', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (res.ok && data.status === 'success') {
@@ -334,15 +389,45 @@ function DiscoverPage() {
     }
   }
 
+  // A basic "badges" system for fun. Customize or remove as you like.
+  function getSwipeBadge() {
+    if (swipeCount < 5) return 'Newcomer';
+    if (swipeCount < 15) return 'Explorer';
+    if (swipeCount < 30) return 'Adventurer';
+    return 'Swiping Pro';
+  }
+
+  // Show toast in top-right corner
+  function showToast(text, type = 'info') {
+    setToast({ text, type });
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast({ text: '', type: '' });
+    }, 2500);
+  }
+
+  // RENDER TAB CONTENT
   function renderTabContent() {
     if (activeTab === 'swipe') {
       if (loading) {
-        return <p>Loading potential creators...</p>;
+        return (
+          <div className="spinner-container">
+            <div className="spinner"></div>
+            <p>Loading potential creators...</p>
+          </div>
+        );
       }
       if (admins.length === 0) {
         return (
           <div className="no-admins-box">
-            <p className="no-admins">No more creators to discover!</p>
+            <p className="no-admins">
+              <span role="img" aria-label="party">
+                🎉
+              </span>{' '}
+              No more creators to discover!
+            </p>
           </div>
         );
       }
@@ -354,125 +439,114 @@ function DiscoverPage() {
       const photoUrl = currentPhoto ? getFullMediaUrl(currentPhoto) : defaultAvatar;
 
       return (
-        <div
-          className={`tinder-card-outer ${cardExit ? `exit-${exitDirection}` : ''}`}
-          ref={cardRef}
-        >
-          <div className="iphone-card">
-            <div className="photo-container">
-              <img src={photoUrl} alt={admin.username} className="main-photo" />
-              <div className="photo-nav">
+        <>
+          {showTutorial && (
+            <div className="tutorial-box">
+              <h4>How to Discover Creators</h4>
+              <p>
+                Swipe left (<strong>X</strong>) to dislike, or swipe right (
+                <strong>♥</strong>) to like. You can also tap the icons below.
+              </p>
+              <button
+                className="btn-close-tutorial"
+                onClick={() => setShowTutorial(false)}
+              >
+                Got it!
+              </button>
+            </div>
+          )}
+
+          <div
+            className={`tinder-card-outer unified-card ${
+              cardExit ? `exit-${exitDirection}` : ''
+            }`}
+            ref={cardRef}
+          >
+            {/* Overlays */}
+            {showLikeOverlay && <div className="swipe-overlay like">LIKE</div>}
+            {showNopeOverlay && <div className="swipe-overlay nope">NOPE</div>}
+
+            <div className="iphone-card">
+              <div className="photo-container">
+                <img src={photoUrl} alt={admin.username} className="main-photo" />
+                {totalPhotos > 1 && (
+                  <div className="photo-nav">
+                    <button
+                      className="arrow-btn"
+                      onClick={handlePrevPhoto}
+                      disabled={photoIndex <= 0}
+                      title="Previous"
+                    >
+                      &lt;
+                    </button>
+                    <button
+                      className="arrow-btn"
+                      onClick={handleNextPhoto}
+                      disabled={photoIndex >= totalPhotos - 1}
+                      title="Next"
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                )}
+                {totalPhotos > 1 && (
+                  <div className="photo-indicators">
+                    {admin.photos.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`dot ${i === photoIndex ? 'active' : ''}`}
+                      ></div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="admin-info">
+                <h3 className="admin-name">
+                  {admin.username} <span className="admin-age">25</span>
+                </h3>
+                <p className="admin-distance">{admin.distance} km away</p>
+                <p className="admin-bio">{admin.bio}</p>
+              </div>
+              <div className="action-buttons">
                 <button
-                  className="arrow-btn"
-                  onClick={handlePrevPhoto}
-                  disabled={photoIndex <= 0}
-                  title="Previous"
+                  className="action-btn no-bg-icon"
+                  onClick={handleDislike}
+                  title="Nope"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
+                  ✖
                 </button>
                 <button
-                  className="arrow-btn"
-                  onClick={handleNextPhoto}
-                  disabled={photoIndex >= totalPhotos - 1}
-                  title="Next"
+                  className="action-btn no-bg-icon"
+                  onClick={handleLike}
+                  title="Like"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
+                  ❤
                 </button>
               </div>
             </div>
-            <div className="admin-info">
-              <h3 className="admin-name">
-                {admin.username} <span className="admin-age">25</span>
-              </h3>
-              <p className="admin-distance">{admin.distance} km away</p>
-              <p className="admin-bio">{admin.bio}</p>
-            </div>
-            <div className="action-buttons">
-              <button
-                className="action-btn no-bg-icon"
-                onClick={handleDislike}
-                title="Nope"
-              >
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-              <button
-                className="action-btn no-bg-icon"
-                onClick={handleLike}
-                title="Like"
-              >
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path
-                    d="M20.84 4.61c-1.54-1.34-3.77-1.34-5.31 
-                       0L12 8.09l-3.53-3.48c-1.54-1.34-3.77-1.34-5.31 
-                       0-1.57 1.36-1.57 3.57 
-                       0 4.93l8.1 7.92 8.1-7.92c1.57-1.36 
-                       1.57-3.57 0-4.93z"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
-        </div>
+        </>
       );
     }
 
     if (activeTab === 'matches') {
       if (!matches.length) {
-        return <p style={{ color: '#999', marginTop: '1rem' }}>No matches yet!</p>;
+        return (
+          <p style={{ color: '#999', marginTop: '1rem' }}>No matches yet!</p>
+        );
       }
       return (
         <div className="matches-grid">
           {matches.map((m) => (
-            <div className="match-card" key={m._id}>
+            <div className="match-card unified-card" key={m._id}>
               <img
                 src={m.profilePic ? getFullMediaUrl(m.profilePic) : defaultAvatar}
                 alt={m.username}
                 className="match-avatar"
                 onClick={() => window.open(`/profile/${m._id}`, '_blank')}
                 style={{ cursor: 'pointer' }}
+                /* Simple "preview" with a title tooltip. You could do a fancy modal if you like. */
+                title={`Bio: ${m.bio || 'No bio available.'}`}
               />
               <div className="match-info">
                 <div className="match-name">{m.username}</div>
@@ -501,13 +575,14 @@ function DiscoverPage() {
       return (
         <div className="matches-grid">
           {likedMe.map((adm) => (
-            <div className="match-card" key={adm._id}>
+            <div className="match-card unified-card" key={adm._id}>
               <img
                 src={adm.profilePic ? getFullMediaUrl(adm.profilePic) : defaultAvatar}
                 alt={adm.username}
                 className="match-avatar"
                 onClick={() => window.open(`/profile/${adm._id}`, '_blank')}
                 style={{ cursor: 'pointer' }}
+                title={`Bio: ${adm.bio || 'No bio available.'}`}
               />
               <div className="match-info">
                 <div className="match-name">{adm.username}</div>
@@ -526,9 +601,36 @@ function DiscoverPage() {
     }
   }
 
+  // Simple stats card: total swipes, matches, etc.
+  function renderDiscoveryStats() {
+    const totalMatches = matches.length;
+    const likedYouCount = likedMe.length;
+    const badge = getSwipeBadge();
+
+    return (
+      <div className="discover-stats-card unified-card">
+        <h3 className="stats-title">Your Discovery Stats</h3>
+        <ul className="stats-list">
+          <li>
+            <strong>Total Swipes:</strong> {swipeCount}
+          </li>
+          <li>
+            <strong>Matches:</strong> {totalMatches}
+          </li>
+          <li>
+            <strong>People Who Liked You:</strong> {likedYouCount}
+          </li>
+        </ul>
+        <p className="badge-info">
+          <strong>Badge:</strong> {badge}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="discover-page">
-      {/* LEFT SIDEBAR */}
+      {/* LEFT SIDEBAR -- DO NOT TOUCH */}
       <aside className="left-sidebar bubble-section">
         <div className="user-info-card">
           <img
@@ -569,50 +671,66 @@ function DiscoverPage() {
           Logout
         </button>
       </aside>
+      {/* END LEFT SIDEBAR */}
 
       {/* MAIN BUBBLE => "tinder card" & new tabs */}
       <main className="right-bubble bubble-section discover-right">
-        <div style={{ paddingTop: '1.2rem' }}>
-          <h2 className="discover-heading">Discover Creators Near You</h2>
-          <p className="location-note">
-            Your exact location: {location || 'Unknown'}
-          </p>
+        <div className="top-row">
+          <div>
+            <h2 className="discover-heading">Discover Creators Near You</h2>
+            <p className="location-note">
+              Your approximate location: {location || 'Unknown'}
+            </p>
+          </div>
+
+          {/* Distance filter slider */}
+          <div className="distance-filter-box">
+            <label className="distance-label">
+              Max Distance: <strong>{distanceFilter} km</strong>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              value={distanceFilter}
+              onChange={(e) => setDistanceFilter(Number(e.target.value))}
+              className="distance-slider"
+            />
+          </div>
         </div>
 
-        {message && <p className="discover-message">{message}</p>}
+        {/* Discovery Stats Card */}
+        {renderDiscoveryStats()}
 
-        {/* TABS */}
+        {/* TAB BAR */}
         <div className="tab-bar">
           <button
             className={`tab-btn ${activeTab === 'swipe' ? 'active' : ''}`}
             onClick={() => setActiveTab('swipe')}
           >
-            Swiping
+            <span className="tab-icon">🔥</span> Swiping
           </button>
           <button
             className={`tab-btn ${activeTab === 'matches' ? 'active' : ''}`}
             onClick={() => setActiveTab('matches')}
           >
-            Matches
+            <span className="tab-icon">❤️</span> Matches
           </button>
           <button
             className={`tab-btn ${activeTab === 'likes' ? 'active' : ''}`}
             onClick={() => setActiveTab('likes')}
           >
-            Who Liked Me
+            <span className="tab-icon">⭐</span> Who Liked Me
           </button>
         </div>
 
         <div className="tab-content">{renderTabContent()}</div>
       </main>
 
-      {/* Show the "Instant Match" alert if triggered */}
-      {matchAlert && (
-        <div className="match-alert-popup">
-          <div className="match-alert-content">
-            <h3>Instant Match!</h3>
-            <p>{matchAlert}</p>
-          </div>
+      {/* Toast Notification */}
+      {toast.text && (
+        <div className={`toast-container ${toast.type}`}>
+          <div className="toast-message">{toast.text}</div>
         </div>
       )}
     </div>
