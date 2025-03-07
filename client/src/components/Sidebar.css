@@ -68,6 +68,7 @@
     transition: background 0.2s;
     
   }
+  
   .menu-list li:hover {
     background-color: #ebf1f5; /* hover color consistent */
   }
