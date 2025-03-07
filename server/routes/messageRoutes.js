@@ -215,6 +215,29 @@ router.post('/like-admin/:adminId', requireAuth, async (req, res) => {
   }
 });
 
+router.get('/dm-conversation/:adminId', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const adminId = req.params.adminId;
+    const conversation = await Message.find({
+      $or: [
+        { sender: userId, receiver: adminId },
+        { sender: adminId, receiver: userId }
+      ]
+    })
+      .populate('sender', 'username profilePic')
+      .populate('receiver', 'username profilePic')
+      .sort({ createdAt: 1 });
+    return res.status(200).json({ status: 'success', conversation });
+  } catch (err) {
+    console.error('DM conversation fetch error:', err);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Server error fetching DM conversation.'
+    });
+  }
+});
+
 
 // handle file uploads => /api/messages/upload-file
 router.post('/upload-file', requireAuth, upload.single('file'), async (req, res) => {
