@@ -1,44 +1,71 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './MyProfilePage.css';
 import './Sidebar.css';
 
-// Helper: Convert a relative URL (e.g. "/uploads/foo.jpg") to an absolute URL.
+// Helper: Convert relative to absolute URL
 function getFullMediaUrl(url) {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
   return `http://localhost:5000${url}`;
 }
 
-// Default avatar image – make sure public/images/default.png exists.
+// Default avatar
 const defaultAvatar = '/images/default.png';
+
+// Fallback gradient
+const FALLBACK_GRADIENT = 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)';
+
+// Compute profile completion (front-end only)
+function getProfileCompletion(user, { bio, interests, achievements, socialLinks }) {
+  // Adjust total if you add or remove criteria
+  let total = 5;
+  let count = 0;
+
+  if (bio?.trim()) count++;
+  if (interests?.trim()) count++;
+  if (achievements?.trim()) count++;
+  if (socialLinks && socialLinks.length > 0) count++;
+  if (user?.profilePic) count++;
+
+  return Math.round((count / total) * 100);
+}
 
 function MyProfilePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  // Which tab is active: "edit" or "preview"
+  // We replicate the "sidebarsCollapsed" approach from LoggedInPage
+  const [sidebarsCollapsed, setSidebarsCollapsed] = useState(false);
+
+  // Admin-only tab
   const [activeTab, setActiveTab] = useState('edit');
 
-  // Basic info fields
+  // Basic info
   const [bio, setBio] = useState('');
   const [interests, setInterests] = useState('');
   const [achievements, setAchievements] = useState('');
   const [socialLinks, setSocialLinks] = useState([]);
 
-  // Media uploads
+  // Normal user editing toggles
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [isEditingAbout, setIsEditingAbout] = useState(false);
+
+  // Uploaded media
   const [uploads, setUploads] = useState([]);
+
+  // Admin media upload fields
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadIsPhoto, setUploadIsPhoto] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
 
-  // Profile picture and banners
+  // Banners & Avatars
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [profileBannerFile, setProfileBannerFile] = useState(null);
   const [suggestedBannerFile, setSuggestedBannerFile] = useState(null);
-  const [previewBannerFile, setPreviewBannerFile] = useState(null); // New field for Preview Banner
+  const [previewBannerFile, setPreviewBannerFile] = useState(null);
 
-  // Admin-only fields
+  // Admin fields
   const [adminPrice, setAdminPrice] = useState('');
   const [adminDiscount, setAdminDiscount] = useState('');
   const [adminBundles, setAdminBundles] = useState([]);
@@ -50,11 +77,16 @@ function MyProfilePage() {
   // Admin story upload
   const [storyFile, setStoryFile] = useState(null);
 
-  // Status messages
+  // Status
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  // On mount: Check session, load profile, and uploads.
+  // Refs for hidden inputs
+  const bannerInputRef = useRef(null);
+  const avatarInputRef = useRef(null);
+  const gridFileInputRef = useRef(null);
+
+  // On mount: check session, load profile, load uploads
   useEffect(() => {
     (async () => {
       try {
@@ -67,8 +99,16 @@ function MyProfilePage() {
         }
         const authData = await authRes.json();
         setUser(authData.user);
+
         await loadMyProfile();
-        if (authData.user?.id) await loadMyUploads(authData.user.id);
+        if (authData.user?.id) {
+          await loadMyUploads(authData.user.id);
+        }
+
+        // Optionally auto-collapse the sidebars on iPhone (like in LoggedInPage)
+        const isIphone = /iPhone/i.test(window.navigator.userAgent);
+        if (isIphone) setSidebarsCollapsed(true);
+
       } catch (err) {
         console.error('Profile load error:', err);
         setError('Server error loading profile.');
@@ -115,6 +155,7 @@ function MyProfilePage() {
     }
   }
 
+  // Save profile
   const handleSaveProfile = async () => {
     setMessage('');
     setError('');
@@ -143,69 +184,7 @@ function MyProfilePage() {
     }
   };
 
-  const handleUploadMedia = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setError('');
-    if (!uploadFile) {
-      setError('Please select a file first.');
-      return;
-    }
-    try {
-      const formData = new FormData();
-      formData.append('mediaFile', uploadFile);
-      formData.append('isPhoto', uploadIsPhoto);
-      formData.append('title', uploadTitle);
-      const res = await fetch('http://localhost:5000/api/profile/me/upload-media', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok && data.status === 'success') {
-        setMessage('Media uploaded!');
-        setUploadFile(null);
-        setUploadIsPhoto(false);
-        setUploadTitle('');
-        if (user?.id) await loadMyUploads(user.id);
-      } else {
-        setError(data.message || 'Error uploading media.');
-      }
-    } catch (err) {
-      console.error('Upload media error:', err);
-      setError('Server error uploading media.');
-    }
-  };
-
-  const handleProfilePicSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setError('');
-    if (!profilePicFile) {
-      setError('Please select a profile pic first.');
-      return;
-    }
-    try {
-      const formData = new FormData();
-      formData.append('profilePic', profilePicFile);
-      const res = await fetch('http://localhost:5000/api/auth/me/update-profile-pic', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok && data.status === 'success') {
-        setMessage('Profile picture updated!');
-        setUser(data.user);
-      } else {
-        setError(data.message || 'Error uploading profile pic.');
-      }
-    } catch (err) {
-      console.error('Profile pic error:', err);
-      setError('Server error uploading profile pic.');
-    }
-  };
-
+  // Admin: banner/preview
   const handleProfileBannerSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -264,7 +243,6 @@ function MyProfilePage() {
     }
   };
 
-  // New: Handle update of the preview banner (for both normal and admin users)
   const handlePreviewBannerSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -294,12 +272,211 @@ function MyProfilePage() {
     }
   };
 
+  // Normal user: Banner/Avatar
+  const handleBannerFileSelected = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setMessage('');
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('previewBanner', file);
+      const res = await fetch('http://localhost:5000/api/auth/me/update-preview-banner', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success' && data.user) {
+        setMessage('Banner updated!');
+        setUser(data.user);
+      } else {
+        setError(data.message || 'Error uploading banner.');
+      }
+    } catch (err) {
+      console.error('Banner upload error:', err);
+      setError('Server error uploading banner.');
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  // Admin: handleProfilePicSubmit
+  const handleProfilePicSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+    if (!profilePicFile) {
+      setError('Please select a profile pic first.');
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('profilePic', profilePicFile);
+      const res = await fetch('http://localhost:5000/api/auth/me/update-profile-pic', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setMessage('Profile picture updated!');
+        setUser(data.user);
+      } else {
+        setError(data.message || 'Error uploading profile pic.');
+      }
+    } catch (err) {
+      console.error('Profile pic error:', err);
+      setError('Server error uploading profile pic.');
+    }
+  };
+
+  // Normal user avatar clicks
+  const handleAvatarFileSelected = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setMessage('');
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('profilePic', file);
+      const res = await fetch('http://localhost:5000/api/auth/me/update-profile-pic', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setMessage('Profile picture updated!');
+        setUser(data.user);
+      } else {
+        setError(data.message || 'Error uploading avatar.');
+      }
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      setError('Server error uploading avatar.');
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  // Admin: Upload Media
+  const handleUploadMedia = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+    if (!uploadFile) {
+      setError('Please select a file first.');
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('mediaFile', uploadFile);
+      formData.append('isPhoto', uploadIsPhoto);
+      formData.append('title', uploadTitle);
+      const res = await fetch('http://localhost:5000/api/profile/me/upload-media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setMessage('Media uploaded!');
+        setUploadFile(null);
+        setUploadIsPhoto(false);
+        setUploadTitle('');
+        if (user?.id) await loadMyUploads(user.id);
+      } else {
+        setError(data.message || 'Error uploading media.');
+      }
+    } catch (err) {
+      console.error('Upload media error:', err);
+      setError('Server error uploading media.');
+    }
+  };
+
+  // Normal user Photo Grid
+  const handleGridPhotoUpload = async (file) => {
+    if (!file) return;
+    setMessage('');
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('mediaFile', file);
+      formData.append('isPhoto', true);
+      formData.append('title', '');
+      const res = await fetch('http://localhost:5000/api/profile/me/upload-media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setMessage('Photo uploaded!');
+        if (user?.id) await loadMyUploads(user.id);
+      } else {
+        setError(data.message || 'Error uploading photo.');
+      }
+    } catch (err) {
+      console.error('Grid photo upload error:', err);
+      setError('Server error uploading photo.');
+    }
+  };
+
+  // 6 squares for the photo grid
+  const renderMediaGridSquares = () => {
+    const photos = uploads.filter((item) => item.isPhoto);
+    const squares = [];
+    for (let i = 0; i < 6; i++) {
+      if (photos[i]) {
+        squares.push(
+          <div key={i} className="media-grid-square filled">
+            <img src={getFullMediaUrl(photos[i].videoUrl)} alt={photos[i].title} />
+          </div>
+        );
+      } else {
+        squares.push(
+          <div
+            key={i}
+            className="media-grid-square empty"
+            onClick={() => gridFileInputRef.current?.click()}
+          >
+            <span className="plus-icon">+</span>
+          </div>
+        );
+      }
+    }
+    return squares;
+  };
+
+  // Delete media
+  const handleDeleteMedia = async (mediaId) => {
+    if (!window.confirm('Delete this media?')) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/profile/me/delete-media/${mediaId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Media deleted.');
+        setUploads((prev) => prev.filter((u) => u._id !== mediaId));
+      } else {
+        setError(data.message || 'Error deleting media.');
+      }
+    } catch (err) {
+      console.error('Delete media error:', err);
+      setError('Server error deleting media.');
+    }
+  };
+
+  // Admin: Bundles & story
   const handleUploadStory = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
     if (!storyFile) {
-      setError('Please select a story file (image or video) first.');
+      setError('Please select a story file first.');
       return;
     }
     try {
@@ -347,6 +524,7 @@ function MyProfilePage() {
         setError(data.message || 'Error creating bundle.');
         return;
       }
+      // If cover file:
       if (bundleCoverFile) {
         const updatedBundles = data.adminBundles || [];
         const newOne = updatedBundles[updatedBundles.length - 1];
@@ -378,35 +556,31 @@ function MyProfilePage() {
     }
   };
 
-  const handleDeleteMedia = async (videoId) => {
-    if (!window.confirm('Delete this media?')) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/profile/me/delete-media/${videoId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage('Media deleted.');
-        setUploads((prev) => prev.filter((u) => u._id !== videoId));
-      } else {
-        setError(data.message || 'Error deleting media.');
-      }
-    } catch (err) {
-      console.error('Delete media error:', err);
-      setError('Server error deleting media.');
-    }
-  };
-
+  // Logout
   const handleLogout = () => {
     fetch('http://localhost:5000/api/auth/logout', { method: 'POST', credentials: 'include' })
       .then(() => navigate('/'))
       .catch((err) => console.error('Logout error:', err));
   };
 
-  // --- Render functions for the Edit Dashboard ---
+  // Just some example placeholders for stats & badges
+  const userStats = {
+    followers: 352,
+    following: 180,
+    likes: 2345,
+  };
 
-  // Banner Settings Card (Admins only)
+  const badges = user?.role === 'admin'
+    ? [
+        { icon: '🛡️', label: 'Administrator' },
+        { icon: '🏆', label: 'High Achiever' },
+      ]
+    : [
+        { icon: '💎', label: 'Diamond Member' },
+        { icon: '🔥', label: 'On a Hot Streak' },
+      ];
+
+  // Admin sections
   const renderBannerSettings = () => {
     if (user.role !== 'admin') return null;
     return (
@@ -416,25 +590,45 @@ function MyProfilePage() {
           <div className="banner-section">
             <label className="form-label">Profile Banner (Feed Top)</label>
             {user.profileBanner ? (
-              <img src={getFullMediaUrl(user.profileBanner)} alt="Profile Banner" className="banner-preview" />
+              <img
+                src={getFullMediaUrl(user.profileBanner)}
+                alt="Profile Banner"
+                className="banner-preview"
+              />
             ) : (
               <div className="banner-preview placeholder">No Banner</div>
             )}
             <form onSubmit={handleProfileBannerSubmit} className="pic-upload-form">
-              <input type="file" accept="image/*" onChange={(e) => setProfileBannerFile(e.target.files[0])} />
-              <button type="submit" className="btn-submit-pic">Upload</button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProfileBannerFile(e.target.files[0])}
+              />
+              <button type="submit" className="btn-submit-pic">
+                Upload
+              </button>
             </form>
           </div>
           <div className="banner-section">
             <label className="form-label">Suggested Creators Banner</label>
             {user.bannerPic ? (
-              <img src={getFullMediaUrl(user.bannerPic)} alt="Suggested Banner" className="banner-preview" />
+              <img
+                src={getFullMediaUrl(user.bannerPic)}
+                alt="Suggested Banner"
+                className="banner-preview"
+              />
             ) : (
               <div className="banner-preview placeholder">No Banner</div>
             )}
             <form onSubmit={handleSuggestedBannerSubmit} className="pic-upload-form">
-              <input type="file" accept="image/*" onChange={(e) => setSuggestedBannerFile(e.target.files[0])} />
-              <button type="submit" className="btn-submit-pic">Upload</button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setSuggestedBannerFile(e.target.files[0])}
+              />
+              <button type="submit" className="btn-submit-pic">
+                Upload
+              </button>
             </form>
           </div>
         </div>
@@ -442,68 +636,149 @@ function MyProfilePage() {
     );
   };
 
-  // New: Preview Banner Card (available for everyone)
-  const renderPreviewBannerCard = () => (
-    <div className="card preview-banner-card">
-      <h3 className="card-title">Preview Banner</h3>
-      <div className="preview-banner-section">
-        {user.previewBanner ? (
-          <img src={getFullMediaUrl(user.previewBanner)} alt="Preview Banner" className="preview-banner-img" />
-        ) : (
-          <div className="preview-banner-img placeholder">No Preview Banner</div>
-        )}
-        <form onSubmit={handlePreviewBannerSubmit} className="pic-upload-form">
-          <input type="file" accept="image/*" onChange={(e) => setPreviewBannerFile(e.target.files[0])} />
-          <button type="submit" className="btn-submit-pic">Update Preview Banner</button>
-        </form>
+  // Admin: preview banner
+  const renderPreviewBannerCard = () => {
+    let previewStyle = {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundImage: user.previewBanner
+        ? `url(${getFullMediaUrl(user.previewBanner)})`
+        : user.profileBanner
+        ? `url(${getFullMediaUrl(user.profileBanner)})`
+        : FALLBACK_GRADIENT,
+    };
+    return (
+      <div className="card preview-banner-card">
+        <h3 className="card-title">Preview Banner</h3>
+        <div className="preview-banner-section">
+          <div className="preview-banner-img" style={previewStyle}>
+            {!user.previewBanner && !user.profileBanner && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '200px',
+                  color: '#666',
+                  background: 'rgba(255,255,255,0.3)',
+                }}
+              >
+                No Preview Banner
+              </div>
+            )}
+          </div>
+          <form onSubmit={handlePreviewBannerSubmit} className="pic-upload-form">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPreviewBannerFile(e.target.files[0])}
+            />
+            <button type="submit" className="btn-submit-pic">
+              Update Preview Banner
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  // Dashboard Grid: Basic Info and Media (or Media & Bundles for admins)
+  // Admin: dashboard
   const renderDashboardGrid = () => (
     <div className="edit-grid">
       {/* Basic Info Card */}
       <div className="card basic-info-card">
         <h3 className="card-title">Basic Info</h3>
         <div className="profile-pic-section">
-          <img src={user.profilePic ? getFullMediaUrl(user.profilePic) : defaultAvatar} alt="Profile" className="current-profile-pic" />
-          <form onSubmit={handleProfilePicSubmit} className="pic-upload-form">
-            <label className="pic-upload-label">
-              Change Picture:
-              <input type="file" accept="image/*" onChange={(e) => setProfilePicFile(e.target.files[0])} />
-            </label>
-            <button type="submit" className="btn-submit-pic">Upload</button>
+          <img
+            src={user.profilePic ? getFullMediaUrl(user.profilePic) : defaultAvatar}
+            alt="Profile"
+            className="current-profile-pic"
+          />
+          <form onSubmit={(e) => e.preventDefault()} className="pic-upload-form">
+            <label className="pic-upload-label">Change Picture:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setProfilePicFile(e.target.files[0])}
+            />
+            <button onClick={handleProfilePicSubmit} className="btn-submit-pic">
+              Upload
+            </button>
           </form>
         </div>
         <div className="info-fields-section">
           <label className="form-label">Bio</label>
-          <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} />
+          <textarea
+            rows={3}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Briefly introduce yourself or your brand."
+          />
           <label className="form-label">Interests</label>
-          <textarea rows={2} value={interests} onChange={(e) => setInterests(e.target.value)} />
+          <textarea
+            rows={2}
+            value={interests}
+            placeholder="Share your key interests (e.g., Tech, Photography)."
+            onChange={(e) => setInterests(e.target.value)}
+          />
           <label className="form-label">Achievements</label>
-          <textarea rows={2} value={achievements} onChange={(e) => setAchievements(e.target.value)} />
+          <textarea
+            rows={2}
+            value={achievements}
+            placeholder="Notable achievements or milestones."
+            onChange={(e) => setAchievements(e.target.value)}
+          />
           <label className="form-label">Social Links (comma-separated)</label>
-          <input type="text" value={socialLinks.join(', ')} onChange={(e) => setSocialLinks(e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
-          <button onClick={handleSaveProfile} className="btn-save-profile">Save Info</button>
+          <input
+            type="text"
+            value={socialLinks.join(', ')}
+            placeholder="Links to your socials (e.g., LinkedIn)."
+            onChange={(e) =>
+              setSocialLinks(
+                e.target.value
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              )
+            }
+          />
+          <button onClick={handleSaveProfile} className="btn-save-profile">
+            Save Info
+          </button>
         </div>
       </div>
 
-      {/* Media (or Media & Bundles) Card */}
+      {/* Media & Bundles */}
       <div className="card media-bundles-card">
-        <h3 className="card-title">{user.role === 'admin' ? "Media & Bundles" : "Media"}</h3>
+        <h3 className="card-title">{user.role === 'admin' ? 'Media & Bundles' : 'Media'}</h3>
         <div className="upload-media-section">
           <label className="form-label">Upload Media</label>
           <form onSubmit={handleUploadMedia} className="media-upload-form">
-            <input type="text" placeholder="Title (optional)" value={uploadTitle} onChange={(e) => setUploadTitle(e.target.value)} />
-            <input type="file" accept="image/*,video/*" onChange={(e) => setUploadFile(e.target.files[0])} />
+            <input
+              type="text"
+              placeholder="Title (optional)"
+              value={uploadTitle}
+              onChange={(e) => setUploadTitle(e.target.value)}
+            />
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => setUploadFile(e.target.files[0])}
+            />
             <div className="form-group is-photo-group">
               <label>
-                <input type="checkbox" checked={uploadIsPhoto} onChange={() => setUploadIsPhoto(!uploadIsPhoto)} />
+                <input
+                  type="checkbox"
+                  checked={uploadIsPhoto}
+                  onChange={() => setUploadIsPhoto(!uploadIsPhoto)}
+                />
                 Photo?
               </label>
             </div>
-            <button type="submit" className="btn-upload-media">Upload</button>
+            <button type="submit" className="btn-upload-media">
+              Upload
+            </button>
           </form>
         </div>
         <div className="my-uploads-list">
@@ -522,7 +797,12 @@ function MyProfilePage() {
                       <video src={mediaUrl} className="upload-item-img" controls />
                     )}
                     <p className="upload-item-title">{item.title}</p>
-                    <button className="delete-media-btn" onClick={() => handleDeleteMedia(item._id)}>Delete</button>
+                    <button
+                      className="delete-media-btn"
+                      onClick={() => handleDeleteMedia(item._id)}
+                    >
+                      Delete
+                    </button>
                   </div>
                 );
               })}
@@ -533,11 +813,32 @@ function MyProfilePage() {
           <div className="bundles-section">
             <label className="form-label">Create a Bundle</label>
             <form onSubmit={handleCreateBundle} className="bundle-form">
-              <input type="text" placeholder="Bundle Title" value={bundleTitle} onChange={(e) => setBundleTitle(e.target.value)} />
-              <input type="number" placeholder="Price" value={bundlePrice} onChange={(e) => setBundlePrice(e.target.value)} />
-              <textarea rows={2} placeholder="Description" value={bundleDesc} onChange={(e) => setBundleDesc(e.target.value)} />
-              <input type="file" accept="image/*" onChange={(e) => setBundleCoverFile(e.target.files[0])} />
-              <button type="submit" className="btn-save-profile">Create Bundle</button>
+              <input
+                type="text"
+                placeholder="Bundle Title"
+                value={bundleTitle}
+                onChange={(e) => setBundleTitle(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Price"
+                value={bundlePrice}
+                onChange={(e) => setBundlePrice(e.target.value)}
+              />
+              <textarea
+                rows={2}
+                placeholder="Description"
+                value={bundleDesc}
+                onChange={(e) => setBundleDesc(e.target.value)}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setBundleCoverFile(e.target.files[0])}
+              />
+              <button type="submit" className="btn-save-profile">
+                Create Bundle
+              </button>
             </form>
           </div>
         )}
@@ -545,20 +846,27 @@ function MyProfilePage() {
     </div>
   );
 
-  // Story Upload Card (Admins Only)
+  // Admin: story upload
   const renderStoryUpload = () => {
     if (user.role !== 'admin') return null;
     return (
       <div className="card story-upload-card">
         <h3 className="card-title">Upload Story</h3>
         <form onSubmit={handleUploadStory} className="story-upload-form">
-          <input type="file" accept="image/*,video/*" onChange={(e) => setStoryFile(e.target.files[0])} />
-          <button type="submit" className="btn-upload-media">Upload Story</button>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            onChange={(e) => setStoryFile(e.target.files[0])}
+          />
+          <button type="submit" className="btn-upload-media">
+            Upload Story
+          </button>
         </form>
       </div>
     );
   };
 
+  // Admin: Edit Tab
   const renderEditTab = () => (
     <div className="edit-dashboard">
       {user.role === 'admin' && renderBannerSettings()}
@@ -568,102 +876,443 @@ function MyProfilePage() {
     </div>
   );
 
-  // Improved Profile Preview Tab
-  const renderPreviewTab = () => (
-    <div className="preview-tab-content preview-dashboard">
-      <div
-        className="hero-banner"
-        style={{
-          backgroundImage: user.previewBanner
-            ? `url(${getFullMediaUrl(user.previewBanner)})`
-            : user.profileBanner
-              ? `url(${getFullMediaUrl(user.profileBanner)})`
-              : 'linear-gradient(120deg, #4a90e2, #6cb1f5)',
-        }}
-      >
-        <div className="hero-overlay"></div>
-        <div className="hero-info">
-          <img src={user.profilePic ? getFullMediaUrl(user.profilePic) : defaultAvatar} alt="Avatar" className="hero-avatar" />
-          <h2 className="hero-username">{user.username}</h2>
-          <p className="hero-bio">{bio || 'No bio available.'}</p>
+  // Admin: Preview Tab
+  const renderPreviewTab = () => {
+    const heroStyle = {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundImage: user.previewBanner
+        ? `url(${getFullMediaUrl(user.previewBanner)})`
+        : user.profileBanner
+        ? `url(${getFullMediaUrl(user.profileBanner)})`
+        : FALLBACK_GRADIENT,
+    };
+
+    const profileCompletion = getProfileCompletion(user, {
+      bio,
+      interests,
+      achievements,
+      socialLinks,
+    });
+
+    return (
+      <div className="preview-tab-content preview-dashboard">
+        <div className="hero-banner" style={heroStyle}>
+          <div className="hero-overlay"></div>
+          <div className="hero-info">
+            <img
+              src={user.profilePic ? getFullMediaUrl(user.profilePic) : defaultAvatar}
+              alt="Avatar"
+              className="hero-avatar"
+            />
+            <h2 className="hero-username">{user.username}</h2>
+            <p className="hero-bio">{bio || 'No bio available.'}</p>
+          </div>
+        </div>
+
+        <div className="preview-details">
+          <div className="preview-info">
+            <h3>About Me</h3>
+            <p>
+              <strong>Interests:</strong> {interests || 'Not specified'}
+            </p>
+            <p>
+              <strong>Achievements:</strong> {achievements || 'N/A'}
+            </p>
+            {socialLinks.length > 0 && (
+              <p>
+                <strong>Links:</strong> {socialLinks.join(', ')}
+              </p>
+            )}
+          </div>
+
+          <div className="preview-gallery">
+            <h3>Your Media</h3>
+            {uploads.length === 0 ? (
+              <p>No media uploaded yet.</p>
+            ) : (
+              <div className="preview-uploads-grid">
+                {uploads.map((item) => {
+                  const mediaUrl = getFullMediaUrl(item.videoUrl);
+                  return (
+                    <div key={item._id} className="preview-upload-card">
+                      {item.isPhoto ? (
+                        <img src={mediaUrl} alt={item.title} className="preview-upload-img" />
+                      ) : (
+                        <video src={mediaUrl} className="preview-upload-img" controls />
+                      )}
+                      <p className="preview-upload-title">{item.title}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Additional info: completion, stats, badges */}
+        <div className="preview-extras card">
+          <h3>Additional Info</h3>
+          <div className="preview-extras-cards">
+            {/* Profile Completion */}
+            <div className="profile-completion-card">
+              <h4>Profile Completion</h4>
+              <div className="progress-bar-container">
+                <div
+                  className="progress-bar-fill"
+                  style={{ width: `${profileCompletion}%` }}
+                ></div>
+              </div>
+              <p>{profileCompletion}% Complete</p>
+            </div>
+
+            {/* Stats */}
+            <div className="stats-card">
+              <h4>Profile Stats</h4>
+              <ul>
+                <li>
+                  <strong>Followers:</strong> {userStats.followers}
+                </li>
+                <li>
+                  <strong>Following:</strong> {userStats.following}
+                </li>
+                <li>
+                  <strong>Total Likes:</strong> {userStats.likes}
+                </li>
+              </ul>
+            </div>
+
+            {/* Badges */}
+            <div className="badges-card">
+              <h4>Badges</h4>
+              <div className="badges-list">
+                {badges.map((b) => (
+                  <div key={b.label} className="badge-item">
+                    <span className="badge-icon">{b.icon}</span> {b.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="preview-details">
-        <div className="preview-info">
-          <h3>About Me</h3>
-          <p><strong>Interests:</strong> {interests || 'Not specified'}</p>
-          <p><strong>Achievements:</strong> {achievements || 'N/A'}</p>
-          {socialLinks.length > 0 && <p><strong>Links:</strong> {socialLinks.join(', ')}</p>}
+    );
+  };
+
+  // Normal user merged layout
+  const renderMergedProfile = () => {
+    const mergedHeaderStyle = {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundImage: user.previewBanner
+        ? `url(${getFullMediaUrl(user.previewBanner)})`
+        : user.profileBanner
+        ? `url(${getFullMediaUrl(user.profileBanner)})`
+        : FALLBACK_GRADIENT,
+    };
+    const profileCompletion = getProfileCompletion(user, {
+      bio,
+      interests,
+      achievements,
+      socialLinks,
+    });
+
+    return (
+      <div className="merged-profile">
+        <div
+          className="merged-header"
+          style={mergedHeaderStyle}
+          onClick={() => bannerInputRef.current?.click()}
+        >
+          <div className="overlay" />
+          <div className="header-content">
+            <div className="avatar-container">
+              <img
+                src={user.profilePic ? getFullMediaUrl(user.profilePic) : defaultAvatar}
+                alt="Avatar"
+                className="avatar"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  avatarInputRef.current?.click();
+                }}
+              />
+            </div>
+            <div className="header-text">
+              <h2 className="username">{user.username}</h2>
+              {!isEditingBio ? (
+                <div className="bio-row">
+                  <p className="bio-text">{bio || 'No bio yet...'}</p>
+                  <span
+                    className="pencil-icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditingBio(true);
+                    }}
+                  >
+                    ✏️
+                  </span>
+                </div>
+              ) : (
+                <div className="bio-edit">
+                  <textarea
+                    rows={2}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Briefly introduce yourself."
+                  />
+                  <button
+                    className="save-btn"
+                    onClick={async (ev) => {
+                      ev.stopPropagation();
+                      await handleSaveProfile();
+                      setIsEditingBio(false);
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="preview-gallery">
-          <h3>Your Media</h3>
-          {uploads.length === 0 ? (
-            <p>No media uploaded yet.</p>
+        <input
+          type="file"
+          accept="image/*"
+          ref={bannerInputRef}
+          style={{ display: 'none' }}
+          onChange={handleBannerFileSelected}
+        />
+        <input
+          type="file"
+          accept="image/*"
+          ref={avatarInputRef}
+          style={{ display: 'none' }}
+          onChange={handleAvatarFileSelected}
+        />
+
+        <div className="about-me-card">
+          <div className="about-me-header">
+            <h3>About Me</h3>
+            {!isEditingAbout && (
+              <span className="pencil-icon" onClick={() => setIsEditingAbout(true)}>
+                ✏️
+              </span>
+            )}
+          </div>
+          {isEditingAbout ? (
+            <div className="about-edit-fields">
+              <label>Interests</label>
+              <textarea
+                rows={2}
+                value={interests}
+                placeholder="Your interests..."
+                onChange={(e) => setInterests(e.target.value)}
+              />
+              <label>Achievements</label>
+              <textarea
+                rows={2}
+                value={achievements}
+                placeholder="Your achievements..."
+                onChange={(e) => setAchievements(e.target.value)}
+              />
+              <label>Social Links (comma-separated)</label>
+              <input
+                type="text"
+                value={socialLinks.join(', ')}
+                placeholder="e.g. LinkedIn, Twitter..."
+                onChange={(e) =>
+                  setSocialLinks(
+                    e.target.value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                  )
+                }
+              />
+              <button
+                className="save-btn"
+                onClick={async () => {
+                  await handleSaveProfile();
+                  setIsEditingAbout(false);
+                }}
+              >
+                Save
+              </button>
+            </div>
           ) : (
-            <div className="preview-uploads-grid">
-              {uploads.map((item) => {
-                const mediaUrl = getFullMediaUrl(item.videoUrl);
-                return (
-                  <div key={item._id} className="preview-upload-card">
-                    {item.isPhoto ? (
-                      <img src={mediaUrl} alt={item.title} className="preview-upload-img" />
-                    ) : (
-                      <video src={mediaUrl} className="preview-upload-img" controls />
-                    )}
-                    <p className="preview-upload-title">{item.title}</p>
-                  </div>
-                );
-              })}
+            <div className="about-display">
+              <p>
+                <strong>Interests:</strong> {interests || 'N/A'}
+              </p>
+              <p>
+                <strong>Achievements:</strong> {achievements || 'N/A'}
+              </p>
+              <p>
+                <strong>Social:</strong>{' '}
+                {socialLinks.length > 0 ? socialLinks.join(', ') : 'None'}
+              </p>
             </div>
           )}
         </div>
+
+        {/* Extra Info: completion, stats, badges */}
+        <div className="profile-extra-cards">
+          <div className="card profile-completion-card">
+            <h3>Profile Completion</h3>
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${profileCompletion}%` }}
+              ></div>
+            </div>
+            <p>{profileCompletion}% Complete</p>
+          </div>
+
+          {/* Stats */}
+          <div className="card stats-card">
+            <h3>Profile Stats</h3>
+            <ul>
+              <li>
+                <strong>Followers:</strong> {userStats.followers}
+              </li>
+              <li>
+                <strong>Following:</strong> {userStats.following}
+              </li>
+              <li>
+                <strong>Total Likes:</strong> {userStats.likes}
+              </li>
+            </ul>
+          </div>
+
+          {/* Badges */}
+          <div className="card badges-card">
+            <h3>Badges</h3>
+            <div className="badges-list">
+              {badges.map((b) => (
+                <div key={b.label} className="badge-item">
+                  <span className="badge-icon">{b.icon}</span> {b.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="media-grid-section">
+          <h3>Your Photos</h3>
+          <div className="media-grid">{renderMediaGridSquares()}</div>
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            ref={gridFileInputRef}
+            onChange={(e) => {
+              handleGridPhotoUpload(e.target.files[0]);
+              e.target.value = '';
+            }}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (!user) return <p style={{ padding: '1rem' }}>Loading user...</p>;
 
+  // Now the final return with the EXACT same left sidebar as LoggedInPage
+  // including the optional toggle button (sidebarsCollapsed)
+  const userPicUrl = user?.profilePic
+    ? `${getFullMediaUrl(user.profilePic)}?cb=${Date.now()}`
+    : defaultAvatar;
+
   return (
-    <div className="my-profile-page">
-      <aside className="left-sidebar">
+    <div className={`my-profile-page ${sidebarsCollapsed ? 'sidebars-collapsed' : ''}`}>
+      {/* LEFT SIDEBAR EXACTLY LIKE LoggedInPage */}
+      <aside
+        className={`left-sidebar bubble-section ${sidebarsCollapsed ? 'collapsed' : ''}`}
+      >
+        <div
+          className="sidebar-toggle-btn"
+          onClick={() => setSidebarsCollapsed(!sidebarsCollapsed)}
+        >
+          <span className="icon icon-menu"></span>
+        </div>
         <div className="user-info-card">
-          <img src={user.profilePic ? getFullMediaUrl(user.profilePic) : defaultAvatar} alt="User" className="user-avatar" />
+          <img
+            src={userPicUrl}
+            alt="User Avatar"
+            className="user-avatar"
+            onError={(e) => {
+              e.target.src = '/logo.png';
+            }}
+          />
           <h3 className="greeting">{user.username}</h3>
         </div>
         <ul className="menu-list grow-space">
           <li>
-            <Link to="/home"><span className="menu-icon">🏠</span> Home</Link>
+            <Link to="/home">
+              <span className="menu-icon">🏠</span> Home
+            </Link>
           </li>
           <li>
-            <Link to="/discover"><span className="menu-icon">🔎</span> Discover</Link>
+            <Link to="/discover">
+              <span className="menu-icon">🔎</span> Discover
+            </Link>
           </li>
           <li>
-            <Link to="/messages"><span className="menu-icon">💬</span> Messages</Link>
+            <Link to="/messages">
+              <span className="menu-icon">💬</span> Messages
+            </Link>
           </li>
           <li>
-            <Link to="/my-profile"><span className="menu-icon">👤</span> Profile</Link>
+            <Link to="/my-profile">
+              <span className="menu-icon">👤</span> Profile
+            </Link>
           </li>
           <li>
-            <Link to="/settings"><span className="menu-icon">⚙️</span> Settings</Link>
+            <Link to="/settings">
+              <span className="menu-icon">⚙️</span> Settings
+            </Link>
           </li>
+          {user?.role === 'admin' && (
+            <li>
+              <Link to="/master">
+                <span className="menu-icon">🛠</span> Master
+              </Link>
+            </li>
+          )}
         </ul>
-        <button onClick={handleLogout} className="logout-btn">Logout</button>
+        <button onClick={handleLogout} className="logout-btn">
+          Logout
+        </button>
       </aside>
+
+      {/* MAIN COLUMN */}
       <main className="profile-main-column">
-        <div className="top-bar">
-          <h2 className="profile-page-title">My Profile Dashboard</h2>
-        </div>
         {message && <p className="profile-message">{message}</p>}
         {error && <p className="profile-error">{error}</p>}
-        <div className="profile-tabs">
-          <button className={`tab-btn ${activeTab === 'edit' ? 'active' : ''}`} onClick={() => setActiveTab('edit')}>
-            Edit Profile
-          </button>
-          <button className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>
-            Profile Preview
-          </button>
-        </div>
-        {activeTab === 'edit' ? renderEditTab() : renderPreviewTab()}
+
+        {user.role === 'admin' ? (
+          <>
+            <div className="profile-tabs">
+              <button
+                className={`tab-btn ${activeTab === 'edit' ? 'active' : ''}`}
+                onClick={() => setActiveTab('edit')}
+              >
+                Edit Profile
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
+                onClick={() => setActiveTab('preview')}
+              >
+                Profile Preview
+              </button>
+            </div>
+            {activeTab === 'edit' ? renderEditTab() : renderPreviewTab()}
+          </>
+        ) : (
+          renderMergedProfile()
+        )}
       </main>
     </div>
   );
