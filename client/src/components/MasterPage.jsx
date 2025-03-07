@@ -19,28 +19,27 @@ function MasterPage() {
   const [normalUsers, setNormalUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
-  // For suggested creators form (only "admin1@example.com" sees it)
+  // For suggested creators
   const [allAdmins, setAllAdmins] = useState([]);
   const [suggestedAdmin, setSuggestedAdmin] = useState('');
   const [suggestedAction, setSuggestedAction] = useState('add'); // 'add' or 'remove'
-
-  // Status message
-  const [message, setMessage] = useState('');
 
   // "Push to All"
   const [pushTitle, setPushTitle] = useState('');
   const [pushFile, setPushFile] = useState(null);
   const [pushIsPhoto, setPushIsPhoto] = useState(false);
 
-  // DISCOVER ADMIN states (only for admin1)
+  // DISCOVER ADMIN states
   const [discoverAdmin, setDiscoverAdmin] = useState('');
   const [discoverAction, setDiscoverAction] = useState('add');
   const [discoverFile, setDiscoverFile] = useState(null);
 
-  // -------- NEW: For "simulate traffic" -----------
+  // For simulate traffic
   const [allVideos, setAllVideos] = useState([]);
   const [simulateVideoId, setSimulateVideoId] = useState('');
   const [simulateUserIds, setSimulateUserIds] = useState([]);
+
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -59,7 +58,8 @@ function MasterPage() {
           navigate('/home');
         } else {
           setUser(data.user);
-          // 2) fetch normal users
+
+          // fetch normal users
           await loadAllUsers();
 
           // If admin1 => fetch entire admin list + all videos
@@ -71,7 +71,6 @@ function MasterPage() {
             if (adminRes.ok && adminData.status === 'success') {
               setAllAdmins(adminData.admins || []);
             }
-            // load all videos => so we can pick any for simulate
             await loadAllVideos();
           }
         }
@@ -82,22 +81,7 @@ function MasterPage() {
     })();
   }, [navigate]);
 
-  async function loadAllVideos() {
-    try {
-      // Suppose you have an endpoint to get all videos => /api/videos/all
-      const res = await fetch('http://localhost:5000/api/videos/all', {
-        credentials: 'include'
-      });
-      const data = await res.json();
-      if (res.ok && data.status === 'success') {
-        setAllVideos(data.videos || []);
-      }
-    } catch (err) {
-      console.error('loadAllVideos error:', err);
-    }
-  }
-
-  const loadAllUsers = async () => {
+  async function loadAllUsers() {
     try {
       setLoadingUsers(true);
       const res = await fetch('http://localhost:5000/api/auth/all-users', {
@@ -115,12 +99,25 @@ function MasterPage() {
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }
+
+  async function loadAllVideos() {
+    try {
+      const res = await fetch('http://localhost:5000/api/videos/all', {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setAllVideos(data.videos || []);
+      }
+    } catch (err) {
+      console.error('loadAllVideos error:', err);
+    }
+  }
 
   const handleUpload = async (e) => {
     e.preventDefault();
     setMessage('');
-
     if (!title.trim()) {
       alert('Please enter a title.');
       return;
@@ -129,7 +126,6 @@ function MasterPage() {
       alert('Please select a file to upload.');
       return;
     }
-
     try {
       const formData = new FormData();
       formData.append('title', title);
@@ -177,9 +173,7 @@ function MasterPage() {
       });
       const data = await res.json();
       if (res.ok && data.newMessage) {
-        setMessage(
-          `Conversation with user: ${userId} created/opened. Go to "Messages" tab.`
-        );
+        setMessage(`Conversation with user: ${userId} created/opened. Go to "Messages" tab.`);
       } else {
         alert(data.message || 'Error messaging user.');
       }
@@ -235,7 +229,7 @@ function MasterPage() {
     }
   };
 
-  // Only admin1@example.com => add or remove suggested creators
+  // handle suggested creators
   const handleSuggestedChange = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -262,7 +256,7 @@ function MasterPage() {
     }
   };
 
-  // "Push to All Feed" for admin1
+  // "Push to All"
   const handlePushAll = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -274,7 +268,6 @@ function MasterPage() {
       alert('Please select a file to upload.');
       return;
     }
-
     try {
       const formData = new FormData();
       formData.append('title', pushTitle);
@@ -301,8 +294,8 @@ function MasterPage() {
     }
   };
 
-  // ----------- SIMULATE TRAFFIC -------------
-  async function handleSimulateTraffic() {
+  // Simulate traffic
+  const handleSimulateTraffic = async () => {
     if (!simulateVideoId) {
       alert('Select a video first');
       return;
@@ -323,13 +316,9 @@ function MasterPage() {
       if (res.ok && data.status === 'success') {
         alert(data.message);
         console.log('Updated video =>', data.video);
-
-        // Re-fetch all videos here if you want, but the feed won't see changes
         await loadAllVideos();
-
-        // KEY FIX: navigate to /home so LoggedInPage re-fetches feed
+        // navigate home so feed refreshes
         navigate('/home');
-
       } else {
         alert(data.message || 'Simulate traffic error.');
       }
@@ -337,11 +326,75 @@ function MasterPage() {
       console.error('Simulate traffic error:', err);
       alert('Server error simulating traffic.');
     }
-  }
+  };
 
-  return !user ? (
-    <p>Loading...</p>
-  ) : (
+  // handle discover admin add/remove
+  const handleUpdateDiscoverAdmin = async (e) => {
+    e.preventDefault();
+    if (!discoverAdmin) {
+      alert('Pick an admin to add/remove from Discover');
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/update-discover', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: discoverAction, adminId: discoverAdmin })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        alert(data.message);
+        window.location.reload();
+      } else {
+        alert(data.message || 'Error updating discover admin');
+      }
+    } catch (err) {
+      console.error('Update discover admin error:', err);
+      alert('Server error updating discover admin');
+    }
+  };
+
+  // upload a new photo for discover admin
+  const handleUploadDiscoverPhoto = async (e) => {
+    e.preventDefault();
+    if (!discoverAdmin) {
+      alert('Select an admin first');
+      return;
+    }
+    if (!discoverFile) {
+      alert('Choose a photo file first');
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('photo', discoverFile);
+
+      const res = await fetch(
+        `http://localhost:5000/api/auth/upload-discover-photo/${discoverAdmin}`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        }
+      );
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        alert(`Photo uploaded. Total: ${data.photos?.length} now.`);
+        setDiscoverFile(null);
+        window.location.reload();
+      } else {
+        alert(data.message || 'Error uploading discover photo');
+      }
+    } catch (err) {
+      console.error('upload discover photo error:', err);
+      alert('Server error uploading discover photo');
+    }
+  };
+
+  if (!user) return <p>Loading...</p>;
+
+  return (
     <div className="master-page">
       {/* LEFT SIDEBAR */}
       <aside className="left-sidebar bubble-section" style={{ margin: 0 }}>
@@ -355,34 +408,22 @@ function MasterPage() {
         </div>
         <ul className="menu-list grow-space">
           <li>
-            <Link to="/home">
-              <span className="menu-icon">🏠</span> Home
-            </Link>
+            <Link to="/home">🏠 Home</Link>
           </li>
           <li>
-            <Link to="/discover">
-              <span className="menu-icon">🔎</span> Discover
-            </Link>
+            <Link to="/discover">🔎 Discover</Link>
           </li>
           <li>
-            <Link to="/messages">
-              <span className="menu-icon">💬</span> Messages
-            </Link>
+            <Link to="/messages">💬 Messages</Link>
           </li>
           <li>
-            <Link to="/my-profile">
-              <span className="menu-icon">👤</span> Profile
-            </Link>
+            <Link to="/my-profile">👤 Profile</Link>
           </li>
           <li>
-            <Link to="/settings">
-              <span className="menu-icon">⚙️</span> Settings
-            </Link>
+            <Link to="/settings">⚙️ Settings</Link>
           </li>
           <li>
-            <Link to="/master">
-              <span className="menu-icon">🛠</span> Master
-            </Link>
+            <Link to="/master">🛠 Master</Link>
           </li>
         </ul>
         <button onClick={() => navigate('/')} className="logout-btn">
@@ -395,15 +436,9 @@ function MasterPage() {
         <h1>Master Admin Page</h1>
         {message && <p style={{ color: 'green' }}>{message}</p>}
 
-        {/* Only admin1@example.com => manage "Suggested Creators" */}
+        {/* Only admin1 => manage "Suggested Creators" */}
         {user?.email.toLowerCase() === 'admin1@example.com' && (
-          <div
-            style={{
-              marginBottom: '1rem',
-              padding: '1rem',
-              border: '1px solid #ccc'
-            }}
-          >
+          <div style={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
             <h3>Manage Suggested Creators (Only admin1@example.com)</h3>
             <form onSubmit={handleSuggestedChange}>
               <label>Admin:</label>
@@ -439,49 +474,11 @@ function MasterPage() {
 
         {/* Manage Discover Admins (admin1@example.com) */}
         {user?.email.toLowerCase() === 'admin1@example.com' && (
-          <div
-            style={{
-              marginBottom: '1rem',
-              padding: '1rem',
-              border: '1px solid #ccc'
-            }}
-          >
+          <div style={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
             <h3>Manage Discover Admins</h3>
 
             {/* 1) add/remove from discover */}
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!discoverAdmin) {
-                  alert('Pick an admin to add/remove from Discover');
-                  return;
-                }
-                try {
-                  const res = await fetch(
-                    'http://localhost:5000/api/auth/update-discover',
-                    {
-                      method: 'POST',
-                      credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        action: discoverAction,
-                        adminId: discoverAdmin
-                      })
-                    }
-                  );
-                  const data = await res.json();
-                  if (res.ok && data.status === 'success') {
-                    alert(data.message);
-                    window.location.reload();
-                  } else {
-                    alert(data.message || 'Error updating discover admin');
-                  }
-                } catch (err) {
-                  console.error('Update discover admin error:', err);
-                  alert('Server error updating discover admin');
-                }
-              }}
-            >
+            <form onSubmit={handleUpdateDiscoverAdmin}>
               <label>Admin:</label>
               <select
                 value={discoverAdmin}
@@ -514,43 +511,7 @@ function MasterPage() {
             {/* 2) upload a new photo for discover admin */}
             <div style={{ marginTop: '1rem' }}>
               <h4>Upload a Discover Photo for Admin</h4>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!discoverAdmin) {
-                    alert('Select an admin first');
-                    return;
-                  }
-                  if (!discoverFile) {
-                    alert('Choose a photo file first');
-                    return;
-                  }
-                  try {
-                    const formData = new FormData();
-                    formData.append('photo', discoverFile);
-
-                    const res = await fetch(
-                      `http://localhost:5000/api/auth/upload-discover-photo/${discoverAdmin}`,
-                      {
-                        method: 'POST',
-                        credentials: 'include',
-                        body: formData
-                      }
-                    );
-                    const data = await res.json();
-                    if (res.ok && data.status === 'success') {
-                      alert(`Photo uploaded. Total: ${data.photos?.length} now.`);
-                      setDiscoverFile(null);
-                      window.location.reload();
-                    } else {
-                      alert(data.message || 'Error uploading discover photo');
-                    }
-                  } catch (err) {
-                    console.error('upload discover photo error:', err);
-                    alert('Server error uploading discover photo');
-                  }
-                }}
-              >
+              <form onSubmit={handleUploadDiscoverPhoto}>
                 <input
                   type="file"
                   accept="image/*"
@@ -562,7 +523,7 @@ function MasterPage() {
           </div>
         )}
 
-        {/* SECTION 1: Admin Upload => direct file upload */}
+        {/* SECTION: Admin Upload => direct file upload */}
         <div className="upload-section-container">
           <h2>Upload New Content</h2>
           <form onSubmit={handleUpload} className="upload-form">
@@ -575,7 +536,6 @@ function MasterPage() {
                 placeholder="Enter title"
               />
             </div>
-
             <div className="form-group">
               <label>File (image or video):</label>
               <input
@@ -584,7 +544,6 @@ function MasterPage() {
                 onChange={(e) => setFile(e.target.files[0])}
               />
             </div>
-
             <div className="form-group">
               <label>
                 <input
@@ -595,7 +554,6 @@ function MasterPage() {
                 This is a Photo?
               </label>
             </div>
-
             <div className="form-group">
               <label>
                 <input
@@ -617,14 +575,13 @@ function MasterPage() {
                 </div>
               )}
             </div>
-
             <button type="submit" className="btn-upload">
               Upload
             </button>
           </form>
         </div>
 
-        {/* If admin1 => "Push to All" feature */}
+        {/* If admin1 => "Push to All" */}
         {user?.email.toLowerCase() === 'admin1@example.com' && (
           <div className="push-all-container" style={{ marginTop: '2rem' }}>
             <h2>Push a File to Everyone’s Feed</h2>
@@ -638,7 +595,6 @@ function MasterPage() {
                   placeholder="Enter title"
                 />
               </div>
-
               <div className="form-group">
                 <label>File (image or video):</label>
                 <input
@@ -647,7 +603,6 @@ function MasterPage() {
                   onChange={(e) => setPushFile(e.target.files[0])}
                 />
               </div>
-
               <div className="form-group">
                 <label>
                   <input
@@ -658,7 +613,6 @@ function MasterPage() {
                   This is a Photo?
                 </label>
               </div>
-
               <button type="submit" className="btn-upload">
                 Push to Everyone’s Feed
               </button>
@@ -666,16 +620,14 @@ function MasterPage() {
           </div>
         )}
 
-        {/* NEW: Simulate Traffic - only for admin1 */}
+        {/* Simulate Traffic (admin1) */}
         {user?.email.toLowerCase() === 'admin1@example.com' && (
           <div
             className="simulate-traffic-section"
             style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #ccc' }}
           >
             <h2>Simulate Traffic</h2>
-            <p>Pick a video from any admin and 6–7 normal users to add random likes, shares, & comments.</p>
-
-            {/* Pick a video */}
+            <p>Pick a video and some normal users to add random likes/shares/comments.</p>
             <div style={{ marginBottom: '1rem' }}>
               <label>Video:</label>
               <select
@@ -690,8 +642,6 @@ function MasterPage() {
                 ))}
               </select>
             </div>
-
-            {/* Pick normal users (6-7) */}
             <div style={{ marginBottom: '1rem' }}>
               <label>Users:</label>
               <select
@@ -712,12 +662,11 @@ function MasterPage() {
                 (Hold Ctrl or Shift to select multiple)
               </p>
             </div>
-
             <button onClick={handleSimulateTraffic}>Simulate Traffic</button>
           </div>
         )}
 
-        {/* SECTION 2: All normal users => scrollable */}
+        {/* List all normal users */}
         <div className="users-section">
           <h2>All Normal Users</h2>
           {loadingUsers ? (
@@ -738,21 +687,14 @@ function MasterPage() {
                     <p>Email: {u.email}</p>
                   </div>
                   <div className="user-card-actions">
-                    <button
-                      onClick={() => handleMessageUser(u._id)}
-                      className="btn-message-user"
-                    >
+                    <button onClick={() => handleMessageUser(u._id)}>
                       Message
                     </button>
-                    <button
-                      onClick={() => handleDeleteComments(u._id)}
-                      className="btn-delete-comments"
-                    >
+                    <button onClick={() => handleDeleteComments(u._id)}>
                       Delete Comments
                     </button>
                     <button
                       onClick={() => handleDeleteUserAccount(u._id)}
-                      className="btn-delete-comments"
                       style={{ backgroundColor: '#af4448' }}
                     >
                       Delete Account
